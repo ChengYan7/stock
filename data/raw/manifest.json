@@ -1,0 +1,64 @@
+{
+  "fetched_at_utc": "2026-11-12T21:32:44+00:00",
+  "sources": {
+    "index/stooq_ndx_daily_close_1985-2022.csv": {
+      "repo": "raja-grewal/stooq-commodities",
+      "commit": "c97a6147e9239d7bd6b5defddc353fc973972426",
+      "path": "market_data/singles/stooq_NDX.csv",
+      "original_source": "Stooq (^NDX)",
+      "modified": false
+    },
+    "index/yahoo_ndx_daily_ohlcv_2019-2026.csv": {
+      "repo": "Chief-rich/nasdaq100-data",
+      "commit": "5ee4f521156cb43fed9d2a528c3f92eaa86e8b1a",
+      "path": "data/ndx_daily/history.csv",
+      "original_source": "Yahoo Finance (^NDX)",
+      "modified": false
+    },
+    "constituents/nasdaq100_constituents.csv": {
+      "repo": "Gary-Strauss/NASDAQ100_Constituents",
+      "commit": "7fe6a9d04d70ae46a2d51e891dd38f55a74f3923",
+      "path": "data/nasdaq100_constituents.csv",
+      "original_source": "Wikipedia: Nasdaq-100 components",
+      "modified": false
+    },
+    "constituents/yahoo_adjusted_ohlcv_2y/": {
+      "repo": "sungholee0221-ops/us-market-data",
+      "branch": "data",
+      "commit_at_fetch": "25581b6e0d9170d2a3bea2cd28c7728f859779d4",
+      "path": "prices.parquet",
+      "original_source": "Yahoo Finance (split- and dividend-adjusted)",
+      "modified": "row subset: Nasdaq-100 members only; parquet split into one CSV per ticker",
+      "upstream_meta": {
+        "generated_at": "2026-11-12T08:51:49+00:00",
+        "last_date": "2026-11-11",
+        "period": "2y",
+        "adjusted": true,
+        "tickers": 548,
+        "rows": 272511,
+        "failed": []
+      },
+      "tickers": 101,
+      "missing": []
+    },
+    "constituents/pubmarks_ohlcv_full_history/": {
+      "repo": "Pubmarks/datasets",
+      "commit_at_fetch": "58ae7a95bc74c31b732750e2e426eba71f68e2fa",
+      "path": "data/stocks/<TICKER>/<YEAR>/ohlcv.csv",
+      "original_source": "see upstream README",
+      "modified": "per-year files concatenated into one CSV per ticker",
+      "tickers": [
+        "ADBE",
+        "GOOG",
+        "AAPL",
+        "INTU",
+        "LRCX",
+        "META",
+        "MSFT",
+        "NFLX",
+        "NVDA",
+        "TSLA"
+      ]
+    }
+  }
+}
