@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nasdaq-100 分段直线拟合</title>
-<meta name="description" content="Nasdaq-100 指数 1985 年至今的对数分段直线拟合：可切换阶段数，查看各阶段斜率和相对趋势线的偏离。">
+<meta name="description" content="Nasdaq-100 指数 1985 年至今的对数分段直线拟合：可切换阶段数，查看各阶段斜率、相对趋势线的偏离，以及任意日期的趋势线点位。">
 <style>
 :root{
   /* layout: one reading column (about 36em) with full-width figures; one control row scopes the two linked charts and both tables below it */
@@ -118,7 +118,36 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .ask{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--fit);border-radius:8px;padding:14px 18px;max-width:44em}
 .foot{color:var(--muted);font-size:13px;border-top:1px solid var(--grid);padding-top:16px}
 .ask ol{margin:8px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
-@media (prefers-reduced-motion:no-preference){.seg button,.kbtn{transition:background-color .12s}}
+.calc{display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);gap:8px 32px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
+.calc-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.calc-pick{display:flex;flex-direction:column;gap:10px}
+.calc-pick label{font-size:13px;color:var(--ink-2)}
+.calc-pick input[type="date"]{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--axis);border-radius:8px;padding:8px 12px;width:100%;max-width:220px;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--axis);background:transparent;color:var(--ink);font:inherit;font-size:13px;border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip:hover{background:var(--band)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.calc-out{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--grid);padding-top:14px}
+.calc-out .k{font-size:13px;color:var(--ink-2)}
+.calc-out .v{font-size:44px;font-weight:650;line-height:1.15;letter-spacing:-.01em}
+.calc-out .w{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.crows{display:flex;flex-direction:column}
+.crow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--grid);font-size:14px}
+.crow .ck{color:var(--ink-2);white-space:nowrap}
+.crow .cv{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.crow .cs{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.calc-note{font-size:13px;color:var(--ink-2);background:var(--band);border-radius:8px;padding:10px 12px}
+.calc-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.key.ext{border-top:0;width:22px;height:2px;background:repeating-linear-gradient(90deg,var(--fit) 0 5px,transparent 5px 9px)}
+.swatch{display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--fit);opacity:.22}
+.l-fit-ext{fill:none;stroke:var(--fit);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
+.a-band{fill:var(--fit);fill-opacity:.13;stroke:none}
+.sel-line{stroke:var(--ink-2);stroke-width:1}
+.dot.big{stroke-width:2.5}
+.t-now{fill:var(--muted);font-size:11px}
+#calc-chart svg{cursor:ew-resize}
+@media (max-width:760px){.calc{grid-template-columns:minmax(0,1fr);padding:16px}.calc-out .v{font-size:38px}}
+@media (prefers-reduced-motion:no-preference){.seg button,.kbtn,.chip{transition:background-color .12s,color .12s,border-color .12s}}
 </style>
 </head>
 <body>
@@ -131,6 +160,31 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 </header>
 
 <div class="tiles" id="tiles"></div>
+
+<section id="calc">
+  <h2>按趋势线，某一天的点位是多少</h2>
+  <p class="note">按 6 段、首尾相接的拟合计算。选一个日期，或者直接在图上点击、拖动。</p>
+  <div class="calc">
+    <div class="calc-side">
+      <div class="calc-pick">
+        <label for="calc-date">日期（1985-10-01 至 2040-12-31）</label>
+        <input type="date" id="calc-date" min="1985-10-01" max="2040-12-31">
+        <div class="chips" id="calc-chips" role="group" aria-label="快捷日期"></div>
+      </div>
+      <div class="calc-out" aria-live="polite">
+        <span class="k">趋势线点位</span>
+        <span class="v" id="calc-value"></span>
+        <span class="w" id="calc-when"></span>
+      </div>
+      <div class="crows" id="calc-rows"></div>
+      <p class="calc-note" id="calc-note">未来的数值是把当前阶段的直线按原斜率延长得到的，只在这个阶段继续的前提下成立。过去 41 年里前五个阶段都结束了，这是推算，不是预测。</p>
+    </div>
+    <div class="calc-main">
+      <div class="legend"><span><i class="key"></i>日收盘</span><span><i class="key fit"></i>趋势线</span><span><i class="key ext"></i>延长线</span><span><i class="swatch"></i>常见范围 ±1σ</span></div>
+      <div class="chart" id="calc-chart"></div>
+    </div>
+  </div>
+</section>
 
 <section id="fit">
   <h2>拟合结果</h2>
@@ -457,6 +511,101 @@ function bindHover(){
   });
 }
 
+// ---- trend-line calculator: fixed to the 6-stage joined fit ----
+var C = { fit: DATA.fits.cont["6"], fn: fitFn("cont", "6"), day: 0, g: null, drag: false, presets: [] };
+var CAP = dayOf("2040-12-31");
+function cStage(d){ var s = C.fit.segs, j = 0; while (j < s.length - 1 && d >= s[j + 1].a) j++; return j; }
+function todayDay(){ var t = new Date(); return Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - T0) / 864e5); }
+function addYears(d, n){ var t = new Date(T0 + d * 864e5); t.setUTCFullYear(t.getUTCFullYear() + n); return Math.round((t.getTime() - T0) / 864e5); }
+function clampDay(d){ return Math.max(D0, Math.min(CAP, d)); }
+function onOrBefore(d){ var lo = 0, hi = N - 1, mid; if (d >= days[hi]) return hi; while (hi - lo > 1) { mid = (lo + hi) >> 1; if (days[mid] <= d) lo = mid; else hi = mid; } return lo; }
+function hiLo(r){ return (r < 0 ? "低 " : "高 ") + Math.abs(r * 100).toFixed(1) + "%"; }
+function crow(parent, k, v, sub){ var r = h("div", "crow", parent); h("span", "ck", r, k); var b = h("span", "cv", r, v); if (sub) h("span", "cs", b, sub); }
+function calcReadout(){
+  var d = C.day, st = cStage(d), s = C.fit.segs[st], v = Math.exp(C.fn(d)), future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], idx, j, chips;
+  $("calc-value").textContent = fmtLvl(v);
+  $("calc-when").textContent = iso(d) + " · 阶段 " + NUM[st] + (future ? " 的延长线" : "") + "，每年 " + fmtPct(s.cagr, 1);
+  rows.textContent = "";
+  if (future) crow(rows, "与最新收盘相比", hiLo(v / last - 1), "最新收盘 " + fmtInt(last) + "（" + iso(D1) + "）");
+  else { idx = onOrBefore(d); crow(rows, "当日收盘", fmtLvl(DATA.c[idx]), days[idx] === d ? "" : "当日休市，取 " + iso(days[idx])); crow(rows, "当日收盘比趋势线", hiLo(DATA.c[idx] / Math.exp(C.fn(days[idx])) - 1)); }
+  crow(rows, "常见范围 ±1σ", fmtLvl(v * Math.exp(-s.sigma)) + " – " + fmtLvl(v * Math.exp(s.sigma)));
+  crow(rows, "本阶段出现过的最大偏离", fmtLvl(v * (1 + s.dn)) + " – " + fmtLvl(v * (1 + s.up)), fmtPct(s.dn, 0) + " 至 " + fmtPct(s.up, 0));
+  $("calc-note").hidden = !future;
+  if ($("calc-date").value !== iso(d)) $("calc-date").value = iso(d);
+  chips = $("calc-chips").querySelectorAll("button");
+  for (j = 0; j < chips.length; j++) chips[j].setAttribute("aria-pressed", C.presets[j][1] === d ? "true" : "false");
+}
+function calcSel(){
+  var g = C.g, d = C.day, X, Y, v = C.fn(d), idx, right;
+  if (!g) return;
+  X = g.x(Math.max(g.x0, d)); Y = g.yl(v); right = X > g.l + g.pw - 76;
+  g.sline.setAttribute("x1", X); g.sline.setAttribute("x2", X);
+  g.sdot.setAttribute("cx", X); g.sdot.setAttribute("cy", Y);
+  g.slab.setAttribute("x", right ? X - 9 : X + 9); g.slab.setAttribute("y", Math.max(g.t + 12, Y - 11)); g.slab.setAttribute("text-anchor", right ? "end" : "start");
+  g.slab.textContent = fmtLvl(Math.exp(v));
+  if (d <= D1) { idx = onOrBefore(d); g.adot.setAttribute("cx", g.x(days[idx])); g.adot.setAttribute("cy", g.yl(lnc[idx])); g.adot.setAttribute("visibility", "visible"); }
+  else g.adot.setAttribute("visibility", "hidden");
+}
+function calcDraw(){
+  var box = $("calc-chart"), W = Math.max(260, box.clientWidth), narrow = W < 440, f = C.fit, s = f.segs, last = s[s.length - 1], j;
+  var mode = C.day >= last.a ? "stage" : "full", x0 = mode === "stage" ? dayOf("2009-01-01") : D0, x1 = CAP;
+  var g = { W: W, l: 44, t: 12, pw: W - 44 - 12, ph: narrow ? 220 : 300, x0: x0, x1: x1, mode: mode };
+  g.x = function(d){ return g.l + (d - x0) / (x1 - x0) * g.pw; };
+  var lo = Infinity, hi = -Infinity;
+  for (j = 0; j < N; j++) if (days[j] >= x0) { if (lnc[j] < lo) lo = lnc[j]; if (lnc[j] > hi) hi = lnc[j]; }
+  lo = Math.min(lo, C.fn(x0) - s[cStage(x0)].sigma) - 0.1; hi = Math.max(hi, C.fn(x1) + last.sigma) + 0.12;
+  g.yl = function(l){ return g.t + (hi - l) / (hi - lo) * g.ph; };
+  var H = g.t + g.ph + 24;
+  box.textContent = "";
+  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": "趋势线及其延长线，标出所选日期的点位" }, box);
+  // the part after the last data point is shaded
+  el("rect", { x: g.x(D1), y: g.t, width: g.x(x1) - g.x(D1), height: g.ph, "class": "g-band" }, svg);
+  var ticks = [], k, m, v, dense;
+  for (k = 1; k <= 6; k++) [1, 2, 5].forEach(function(m){ v = m * Math.pow(10, k); if (Math.log(v) > lo + 0.04 && Math.log(v) < hi - 0.02) ticks.push(v); });
+  dense = g.ph / ticks.length < 26;
+  if (dense) ticks = ticks.filter(function(v){ var e = Math.log10(v); return Math.abs(e - Math.round(e)) < 1e-9; });
+  ticks.forEach(function(v){ var Y = g.yl(Math.log(v)); el("line", { x1: g.l, x2: g.l + g.pw, y1: Y, y2: Y, "class": "g-grid" }, svg); el("text", { x: g.l - 6, y: Y + 4, "text-anchor": "end", "class": "t-tick" }, svg, v >= 1000 ? (v / 1000) + "K" : String(v)); });
+  el("line", { x1: g.l, x2: g.l + g.pw, y1: g.t + g.ph, y2: g.t + g.ph, "class": "g-axis" }, svg);
+  var step = mode === "stage" ? (narrow ? 10 : 5) : 10, yr, X;
+  for (yr = Math.ceil((1985.75 + x0 / 365.25) / step) * step; yr <= 2040; yr += step) { X = g.x(dayOf(yr + "-01-01")); if (X < g.l - 0.5) continue; el("line", { x1: X, x2: X, y1: g.t + g.ph, y2: g.t + g.ph + 4, "class": "g-axis" }, svg); el("text", { x: X, y: g.t + g.ph + 17, "text-anchor": X > g.l + g.pw - 14 ? "end" : "middle", "class": "t-tick" }, svg, String(yr)); }
+  // ±1σ band, stage by stage (straight in log space)
+  var band = "";
+  s.forEach(function(sg, q){
+    var a = q === 0 ? D0 : sg.a, b = q === s.length - 1 ? x1 : s[q + 1].a; if (b <= x0) return; if (a < x0) a = x0;
+    band += "M" + g.x(a).toFixed(1) + "," + g.yl(C.fn(a) + sg.sigma).toFixed(1) + "L" + g.x(b).toFixed(1) + "," + g.yl(C.fn(b) + sg.sigma).toFixed(1) + "L" + g.x(b).toFixed(1) + "," + g.yl(C.fn(b) - sg.sigma).toFixed(1) + "L" + g.x(a).toFixed(1) + "," + g.yl(C.fn(a) - sg.sigma).toFixed(1) + "Z";
+  });
+  el("path", { d: band, "class": "a-band" }, svg);
+  var xs = [], ys = [];
+  for (j = 0; j < N; j++) if (days[j] >= x0) { xs.push(g.x(days[j])); ys.push(g.yl(lnc[j])); }
+  el("path", { d: linePath(xs, ys), "class": "l-index" }, svg);
+  var d = "M" + g.x(x0).toFixed(1) + "," + g.yl(C.fn(x0)).toFixed(1);
+  f.nodes.forEach(function(n){ if (n[0] > x0) d += "L" + g.x(n[0]).toFixed(1) + "," + g.yl(n[1]).toFixed(1); });
+  el("path", { d: d, "class": "l-fit" }, svg);
+  el("path", { d: "M" + g.x(D1).toFixed(1) + "," + g.yl(C.fn(D1)).toFixed(1) + "L" + g.x(x1).toFixed(1) + "," + g.yl(C.fn(x1)).toFixed(1), "class": "l-fit-ext" }, svg);
+  el("line", { x1: g.x(D1), x2: g.x(D1), y1: g.t, y2: g.t + g.ph, "class": "g-break" }, svg);
+  el("text", { x: g.x(D1) + 6, y: g.t + g.ph - 8, "class": "t-now" }, svg, "最新数据之后");
+  g.sline = el("line", { y1: g.t, y2: g.t + g.ph, "class": "sel-line" }, svg);
+  g.adot = el("circle", { r: 4, "class": "dot", visibility: "hidden" }, svg);
+  g.sdot = el("circle", { r: 5.5, "class": "dot fit big" }, svg);
+  g.slab = el("text", { "class": "t-end" }, svg, "");
+  g.hit = el("rect", { x: g.l, y: g.t, width: g.pw, height: g.ph, fill: "transparent" }, svg);
+  function pick(ev){ var r = g.hit.getBoundingClientRect(), frac = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)); C.day = clampDay(Math.round(x0 + frac * (x1 - x0))); calcReadout(); calcSel(); }
+  g.hit.addEventListener("pointerdown", function(ev){ C.drag = true; try { g.hit.setPointerCapture(ev.pointerId); } catch (e) {} pick(ev); });
+  g.hit.addEventListener("pointermove", function(ev){ if (C.drag) pick(ev); });
+  function end(){ if (!C.drag) return; C.drag = false; if ((C.day >= last.a ? "stage" : "full") !== g.mode) calcDraw(); }
+  g.hit.addEventListener("pointerup", end); g.hit.addEventListener("pointercancel", end);
+  C.g = g; calcSel();
+}
+function setDay(d){ var last = C.fit.segs[C.fit.segs.length - 1]; C.day = clampDay(d); calcReadout(); if (!C.g || (C.day >= last.a ? "stage" : "full") !== C.g.mode) calcDraw(); else calcSel(); }
+function calcInit(){
+  var t = todayDay(), y = new Date(T0 + t * 864e5).getUTCFullYear(), box = $("calc-chips");
+  C.presets = [["今天", t], ["今年年底", dayOf(y + "-12-31")], ["1 年后", addYears(t, 1)], ["3 年后", addYears(t, 3)], ["5 年后", addYears(t, 5)], ["10 年后", addYears(t, 10)]].map(function(p){ return [p[0], clampDay(p[1])]; });
+  C.presets.forEach(function(p, q){ var b = h("button", "chip", box, p[0]); b.type = "button"; b.id = "calc-chip-" + q; b.setAttribute("data-i", q); });
+  box.addEventListener("click", function(ev){ var b = ev.target.closest("button"); if (b) setDay(C.presets[+b.getAttribute("data-i")][1]); });
+  $("calc-date").addEventListener("change", function(){ var v = this.value; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) setDay(dayOf(v)); else this.value = iso(C.day); });
+  setDay(t);
+}
+
 function td(tr, cls, text, sub){ var c = h("td", cls, tr, text); if (sub) h("span", "sub", c, sub); return c; }
 function drawStageTable(){
   var t = $("stage-table"), f = fit(), tr, head = ["阶段", "起止", "时长", "年化斜率", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"];
@@ -530,11 +679,11 @@ function render(){ syncControls(); drawMain(); drawDev(); bindHover(); drawStage
   });
   wrap.addEventListener("focus", function(){ if (wrap.matches(":focus-visible") && state.hover < 0) setHover(N - 1, "main"); });
   wrap.addEventListener("blur", function(){ setHover(-1); });
-  drawTiles(); render();
+  drawTiles(); render(); calcInit();
   var lastW = $("chart-main").clientWidth, timer = null;
   if (window.ResizeObserver) new ResizeObserver(function(){
     var w = $("chart-main").clientWidth; if (w === lastW) return; lastW = w;
-    clearTimeout(timer); timer = setTimeout(render, 80);
+    clearTimeout(timer); timer = setTimeout(function(){ render(); calcDraw(); }, 80);
   }).observe($("chart-main"));
 })();
 })();
