@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-lang="zh">
+<html lang="en" data-lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nasdaq-100 分段直线拟合 | Piecewise Trend Fit</title>
-<meta name="description" content="Nasdaq-100 指数 1985 年至今的对数分段直线拟合，可查看任意日期的趋势线点位。 A piecewise log-linear trend fit of the Nasdaq-100 since 1985, with a trend-line calculator for any date. 中文 / English.">
-<script>(function(){var n=/^zh/i.test(navigator.language||"")?"zh":"en",l=n,h=(location.hash||"").slice(1);try{if(h==="en"||h==="zh")l=h;else{var s=localStorage.getItem("ndx-lang");if(s==="en"||s==="zh")l=s;}}catch(e){l=n;}document.documentElement.setAttribute("data-lang",l);document.documentElement.lang=l==="zh"?"zh-CN":"en";})();</script>
+<title>Nasdaq-100 Piecewise Trend Fit | 分段直线拟合</title>
+<meta name="description" content="A piecewise log-linear trend fit of the Nasdaq-100 since 1985, with a trend-line calculator for any date. Nasdaq-100 指数 1985 年至今的对数分段直线拟合，可查看任意日期的趋势线点位。 English / 中文.">
+<script>(function(){/* language comes from the URL only: #zh is Chinese, #en or no suffix is English */var l=(location.hash||"").slice(1)==="zh"?"zh":"en";document.documentElement.setAttribute("data-lang",l);document.documentElement.lang=l==="zh"?"zh-CN":"en";})();</script>
 <style>
 :root{
   /* layout: one reading column (about 36em) with full-width figures; one control row scopes the two linked charts and both tables below it */
@@ -803,7 +803,6 @@ function setLang(l, fromHash){
   if (l !== "en" && l !== "zh") return;
   LANG = l;
   document.documentElement.setAttribute("data-lang", l); document.documentElement.lang = l === "zh" ? "zh-CN" : "en";
-  try { localStorage.setItem("ndx-lang", l); } catch (e) {}
   if (!fromHash && (location.hash || "").slice(1) !== l) { try { location.hash = l; } catch (e) {} }
   drawTiles(); render(); calcChips(); calcReadout(); calcDraw();
 }
@@ -815,7 +814,7 @@ function setLang(l, fromHash){
   $("ctl-f").addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t) { state.fam = t.getAttribute("data-fam"); render(); } });
   $("k-table").addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t) { state.K = t.getAttribute("data-k"); render(); } });
   $("ctl-lang").addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t && t.getAttribute("data-lang") !== LANG) setLang(t.getAttribute("data-lang"), false); });
-  window.addEventListener("hashchange", function(){ var hs = (location.hash || "").slice(1); if ((hs === "en" || hs === "zh") && hs !== LANG) setLang(hs, true); });
+  window.addEventListener("hashchange", function(){ var hs = (location.hash || "").slice(1), want = hs === "zh" ? "zh" : (hs === "en" || hs === "" ? "en" : LANG); if (want !== LANG) setLang(want, true); });
   var wrap = $("wrap");
   wrap.addEventListener("keydown", function(ev){
     var step = ev.shiftKey ? 21 : 1, cur = state.hover < 0 ? N - 1 : state.hover, nx = null;
