@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-lang="zh">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nasdaq-100 分段直线拟合</title>
-<meta name="description" content="Nasdaq-100 指数 1985 年至今的对数分段直线拟合：可切换阶段数，查看各阶段斜率、相对趋势线的偏离，以及任意日期的趋势线点位。">
+<title>Nasdaq-100 分段直线拟合 | Piecewise Trend Fit</title>
+<meta name="description" content="Nasdaq-100 指数 1985 年至今的对数分段直线拟合，可查看任意日期的趋势线点位。 A piecewise log-linear trend fit of the Nasdaq-100 since 1985, with a trend-line calculator for any date. 中文 / English.">
+<script>(function(){var n=/^zh/i.test(navigator.language||"")?"zh":"en",l=n,h=(location.hash||"").slice(1);try{if(h==="en"||h==="zh")l=h;else{var s=localStorage.getItem("ndx-lang");if(s==="en"||s==="zh")l=s;}}catch(e){l=n;}document.documentElement.setAttribute("data-lang",l);document.documentElement.lang=l==="zh"?"zh-CN":"en";})();</script>
 <style>
 :root{
   /* layout: one reading column (about 36em) with full-width figures; one control row scopes the two linked charts and both tables below it */
@@ -28,23 +29,27 @@
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --band:rgba(255,255,255,.045);
   --index:#3987e5; --fit:#d95926;
 }
+[data-lang="zh"] [data-l="en"],[data-lang="en"] [data-l="zh"]{display:none!important}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7}
-.page{max-width:1040px;margin:0 auto;padding:40px 20px 72px;display:flex;flex-direction:column;gap:44px}
+.page{max-width:1040px;margin:0 auto;padding:32px 20px 72px;display:flex;flex-direction:column;gap:44px}
 header{display:flex;flex-direction:column;gap:10px}
+.topbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px}
 .meta{margin:0;color:var(--muted);font-size:13px;letter-spacing:.02em}
 h1{margin:0;font-family:var(--font-display);font-size:30px;line-height:1.25;font-weight:650;text-wrap:balance}
 h2{margin:0;font-family:var(--font-display);font-size:20px;line-height:1.35;font-weight:650;text-wrap:balance}
 h3{margin:0;font-size:15px;font-weight:650}
 p{margin:0}
 .lede{max-width:36em;font-size:17px;color:var(--ink-2)}
+[data-lang="en"] .lede,[data-lang="en"] .prose{max-width:42em}
 section{display:flex;flex-direction:column;gap:16px}
 .prose{max-width:36em;display:flex;flex-direction:column;gap:12px}
 .prose ol,.prose ul{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
 .note{color:var(--ink-2);font-size:14px;max-width:44em}
+[data-lang="en"] .note{max-width:52em}
 a{color:inherit;text-underline-offset:3px}
-a:focus-visible,button:focus-visible,.chart-wrap:focus-visible,summary:focus-visible{outline:2px solid var(--index);outline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,.chart-wrap:focus-visible,summary:focus-visible{outline:2px solid var(--index);outline-offset:2px}
 
 .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .tile{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -62,12 +67,13 @@ a:focus-visible,button:focus-visible,.chart-wrap:focus-visible,summary:focus-vis
 .seg button:first-child{border-left:0}
 .seg button:hover{background:var(--band)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg.lang button{font-size:13px;padding:4px 11px}
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 16px 10px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 20px}
 .card-sub{font-size:13px;color:var(--ink-2)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-2)}
-.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend>span{display:inline-flex;align-items:center;gap:6px}
 .key{display:inline-block;width:18px;height:0;border-top:2px solid var(--index);border-radius:2px}
 .key.fit{border-top-color:var(--fit)}
 .chart-wrap{position:relative;display:flex;flex-direction:column;gap:14px;border-radius:6px}
@@ -107,7 +113,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 td.nw{white-space:nowrap;font-variant-numeric:tabular-nums}
 td .sub{display:block;color:var(--muted);font-size:12px}
 tr.on td{background:var(--band)}
-.kbtn{appearance:none;border:1px solid var(--axis);background:transparent;color:var(--ink);font:inherit;font-size:13px;border-radius:6px;padding:2px 10px;cursor:pointer;font-variant-numeric:tabular-nums}
+.kbtn{appearance:none;border:1px solid var(--axis);background:transparent;color:var(--ink);font:inherit;font-size:13px;border-radius:6px;padding:2px 10px;cursor:pointer;font-variant-numeric:tabular-nums;white-space:nowrap}
 tr.on .kbtn{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .bar{display:block;height:6px;border-radius:0 3px 3px 0;background:var(--muted);margin-top:5px;min-width:2px}
 .ctx td:last-child{min-width:260px}
@@ -116,8 +122,10 @@ summary{cursor:pointer;padding:10px 14px;font-size:14px;color:var(--ink-2);borde
 details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 0 10px 10px;max-height:420px;overflow-y:auto}
 .sources{font-size:14px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px;max-width:52em;margin:0;padding-left:1.3em}
 .ask{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--fit);border-radius:8px;padding:14px 18px;max-width:44em}
+[data-lang="en"] .ask{max-width:50em}
+.ask ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
 .foot{color:var(--muted);font-size:13px;border-top:1px solid var(--grid);padding-top:16px}
-.ask ol{margin:8px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
+
 .calc{display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);gap:8px 32px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
 .calc-side{display:flex;flex-direction:column;gap:16px;min-width:0}
 .calc-pick{display:flex;flex-direction:column;gap:10px}
@@ -133,8 +141,8 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .calc-out .w{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .crows{display:flex;flex-direction:column}
 .crow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--grid);font-size:14px}
-.crow .ck{color:var(--ink-2);white-space:nowrap}
-.crow .cv{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.crow .ck{color:var(--ink-2)}
+.crow .cv{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .crow .cs{display:block;font-weight:400;font-size:12px;color:var(--muted)}
 .calc-note{font-size:13px;color:var(--ink-2);background:var(--band);border-radius:8px;padding:10px 12px}
 .calc-main{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -154,75 +162,86 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 <div class="page">
 
 <header>
-  <p class="meta" id="meta-line"></p>
-  <h1>Nasdaq-100 分段直线拟合</h1>
-  <p class="lede">在对数坐标上，一条直线解释不了这 41 年。让数据自己找断点，指数分成 6 个阶段，其中 3 个正常增长阶段的斜率都落在每年 14% 到 18% 之间。</p>
+  <div class="topbar">
+    <p class="meta" id="meta-line"></p>
+    <div class="seg lang" id="ctl-lang" role="group" aria-label="语言 / Language"><button type="button" id="lang-zh" data-lang="zh" lang="zh-CN">中文</button><button type="button" id="lang-en" data-lang="en" lang="en">English</button></div>
+  </div>
+  <h1><span data-l="zh">Nasdaq-100 分段直线拟合</span><span data-l="en">Nasdaq-100 Piecewise Trend Fit</span></h1>
+  <p class="lede"><span data-l="zh">在对数坐标上，一条直线解释不了这 41 年。让数据自己找断点，指数分成 6 个阶段，其中 3 个正常增长阶段的斜率都落在每年 14% 到 18% 之间。</span><span data-l="en">On a log scale, one straight line cannot describe these 41 years. Letting the data pick the breakpoints splits the index into 6 stages, and the 3 normal-growth stages all slope between 14% and 18% a year.</span></p>
 </header>
 
 <div class="tiles" id="tiles"></div>
 
 <section id="calc">
-  <h2>按趋势线，某一天的点位是多少</h2>
-  <p class="note">按 6 段、首尾相接的拟合计算。选一个日期，或者直接在图上点击、拖动。</p>
+  <h2><span data-l="zh">按趋势线，某一天的点位是多少</span><span data-l="en">Where the trend line puts the index on a given day</span></h2>
+  <p class="note"><span data-l="zh">按 6 段、首尾相接的拟合计算。选一个日期，或者直接在图上点击、拖动。</span><span data-l="en">Based on the 6-stage joined fit. Pick a date, or click and drag on the chart.</span></p>
   <div class="calc">
     <div class="calc-side">
       <div class="calc-pick">
-        <label for="calc-date">日期（1985-10-01 至 2040-12-31）</label>
+        <label for="calc-date"><span data-l="zh">日期（1985-10-01 至 2040-12-31）</span><span data-l="en">Date (1985-10-01 to 2040-12-31)</span></label>
         <input type="date" id="calc-date" min="1985-10-01" max="2040-12-31">
-        <div class="chips" id="calc-chips" role="group" aria-label="快捷日期"></div>
+        <div class="chips" id="calc-chips" role="group"></div>
       </div>
       <div class="calc-out" aria-live="polite">
-        <span class="k">趋势线点位</span>
+        <span class="k"><span data-l="zh">趋势线点位</span><span data-l="en">Trend-line level</span></span>
         <span class="v" id="calc-value"></span>
         <span class="w" id="calc-when"></span>
       </div>
       <div class="crows" id="calc-rows"></div>
-      <p class="calc-note" id="calc-note">未来的数值是把当前阶段的直线按原斜率延长得到的，只在这个阶段继续的前提下成立。过去 41 年里前五个阶段都结束了，这是推算，不是预测。</p>
+      <p class="calc-note" id="calc-note"><span data-l="zh">未来的数值是把当前阶段的直线按原斜率延长得到的，只在这个阶段继续的前提下成立。过去 41 年里前五个阶段都结束了，这是推算，不是预测。</span><span data-l="en">Future values extend the current stage's line at its present slope. They hold only if this stage continues. All five earlier stages in the past 41 years came to an end, so treat this as an extrapolation. It is no forecast.</span></p>
     </div>
     <div class="calc-main">
-      <div class="legend"><span><i class="key"></i>日收盘</span><span><i class="key fit"></i>趋势线</span><span><i class="key ext"></i>延长线</span><span><i class="swatch"></i>常见范围 ±1σ</span></div>
+      <div class="legend">
+        <span><i class="key"></i><span data-l="zh">日收盘</span><span data-l="en">Daily close</span></span>
+        <span><i class="key fit"></i><span data-l="zh">趋势线</span><span data-l="en">Trend line</span></span>
+        <span><i class="key ext"></i><span data-l="zh">延长线</span><span data-l="en">Extension</span></span>
+        <span><i class="swatch"></i><span data-l="zh">常见范围 ±1σ</span><span data-l="en">Typical range ±1σ</span></span>
+      </div>
       <div class="chart" id="calc-chart"></div>
     </div>
   </div>
 </section>
 
 <section id="fit">
-  <h2>拟合结果</h2>
-  <p class="note">纵轴取对数后，直线的斜率就是年化增长率。断点位置由最小二乘自动选出，没有人工指定。下面两个按钮同时控制两张图和两张表。</p>
+  <h2><span data-l="zh">拟合结果</span><span data-l="en">Fit results</span></h2>
+  <p class="note"><span data-l="zh">纵轴取对数后，直线的斜率就是年化增长率。断点位置由最小二乘自动选出，没有人工指定。下面两个按钮同时控制两张图和两张表。</span><span data-l="en">With a log vertical axis, the slope of a straight line is the annual growth rate. Least squares picks the breakpoints; none were set by hand. The two controls below drive both charts and both tables.</span></p>
   <div class="controls">
-    <div class="ctl"><span class="lab" id="lab-k">阶段数</span><div class="seg" id="ctl-k" role="group" aria-labelledby="lab-k"></div></div>
-    <div class="ctl"><span class="lab" id="lab-f">相邻直线</span><div class="seg" id="ctl-f" role="group" aria-labelledby="lab-f">
-      <button type="button" id="fam-cont" data-fam="cont">首尾相接</button><button type="button" id="fam-disc" data-fam="disc">各自独立</button></div></div>
+    <div class="ctl"><span class="lab" id="lab-k"><span data-l="zh">阶段数</span><span data-l="en">Stages</span></span><div class="seg" id="ctl-k" role="group" aria-labelledby="lab-k"></div></div>
+    <div class="ctl"><span class="lab" id="lab-f"><span data-l="zh">相邻直线</span><span data-l="en">Adjacent lines</span></span><div class="seg" id="ctl-f" role="group" aria-labelledby="lab-f">
+      <button type="button" id="fam-cont" data-fam="cont"><span data-l="zh">首尾相接</span><span data-l="en">Joined</span></button><button type="button" id="fam-disc" data-fam="disc"><span data-l="zh">各自独立</span><span data-l="en">Independent</span></button></div></div>
   </div>
 
   <div class="card">
-    <div class="chart-wrap" id="wrap" tabindex="0" aria-label="指数与趋势线图表。按左右方向键逐日查看数值。">
+    <div class="chart-wrap" id="wrap" tabindex="0">
       <div>
         <div class="card-head">
-          <h3 id="main-title">指数与分段趋势线</h3>
-          <div class="legend"><span><i class="key"></i>Nasdaq-100 日收盘</span><span><i class="key fit"></i>分段趋势线</span></div>
+          <h3 id="main-title"></h3>
+          <div class="legend">
+            <span><i class="key"></i><span data-l="zh">Nasdaq-100 日收盘</span><span data-l="en">Nasdaq-100 daily close</span></span>
+            <span><i class="key fit"></i><span data-l="zh">分段趋势线</span><span data-l="en">Piecewise trend</span></span>
+          </div>
         </div>
-        <p class="card-sub">对数坐标。每个阶段上方的百分比是该段直线的年化斜率。</p>
+        <p class="card-sub"><span data-l="zh">对数坐标。每个阶段上方的百分比是该段直线的年化斜率。</span><span data-l="en">Log scale. The percentage above each stage is that line's annual slope.</span></p>
       </div>
       <div class="chart" id="chart-main"></div>
       <div>
-        <h3>指数相对趋势线的偏离</h3>
-        <p class="card-sub">橙色横线是趋势线本身。蓝线在上方表示指数高于趋势线。</p>
+        <h3><span data-l="zh">指数相对趋势线的偏离</span><span data-l="en">Index deviation from the trend line</span></h3>
+        <p class="card-sub"><span data-l="zh">橙色横线是趋势线本身。蓝线在上方表示指数高于趋势线。</span><span data-l="en">The orange horizontal line is the trend itself. Blue above it means the index is above trend.</span></p>
       </div>
       <div class="chart" id="chart-dev"></div>
       <div class="tip" id="tip" role="status"></div>
     </div>
   </div>
 
-  <div class="table-scroll"><table id="stage-table" aria-label="各阶段参数"></table></div>
-  <p class="note">残差 σ 是该阶段内 ln(指数) 偏离直线的标准差，0.10 约等于上下 10%。最高和最低偏离是指数相对趋势线的最大正负差距。</p>
-  <details><summary>数据表：每年年末的收盘、趋势线和偏离</summary><div class="table-scroll"><table id="annual-table"></table></div></details>
+  <div class="table-scroll"><table id="stage-table"></table></div>
+  <p class="note"><span data-l="zh">残差 σ 是该阶段内 ln(指数) 偏离直线的标准差，0.10 约等于上下 10%。最高和最低偏离是指数相对趋势线的最大正负差距。</span><span data-l="en">Residual σ is the standard deviation of ln(index) around the line within the stage; 0.10 is roughly 10% either way. Highest and lowest deviation are the widest gaps of the index above and below the trend.</span></p>
+  <details><summary><span data-l="zh">数据表：每年年末的收盘、趋势线和偏离</span><span data-l="en">Data table: year-end close, trend and deviation</span></summary><div class="table-scroll"><table id="annual-table"></table></div></details>
 </section>
 
 <section id="choose-k">
-  <h2>分成几段合适</h2>
-  <div class="table-scroll"><table id="k-table" aria-label="不同阶段数的拟合误差"></table></div>
-  <div class="prose">
+  <h2><span data-l="zh">分成几段合适</span><span data-l="en">How many stages</span></h2>
+  <div class="table-scroll"><table id="k-table"></table></div>
+  <div class="prose" data-l="zh">
     <p>误差从 1 段到 5 段下降很快，6 段之后每加一段只改善约 0.006。5 段和 6 段的区别是金融危机是否单独成段。我建议用 <strong>6 段、首尾相接</strong> 作为基准，理由有三条：</p>
     <ul>
       <li>断点稳定。3 段时的两个断点（2000-04、2009-03）在 6 段时几乎原样保留（2000-06、2009-03），7 段只是把泡沫阶段再拆成两半。</li>
@@ -231,22 +250,55 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     </ul>
     <p>2009 年 3 月以后的 17.6 年始终是一条直线。首尾相接的拟合加到 7 段也没有把它拆开。各自独立的拟合在 6 段时会在 2022-05 切一刀（之前每年 +18.8%，之后 +25.6%），但总误差只从 0.103 降到 0.097。AI 行情目前还不能和 2009 年以来的趋势区分开。</p>
   </div>
+  <div class="prose" data-l="en">
+    <p>The error falls quickly from 1 to 5 stages. Beyond 6, each extra stage improves it by only about 0.006. The difference between 5 and 6 is whether the financial crisis gets a stage of its own. I suggest <strong>6 stages, joined</strong> as the baseline, for three reasons:</p>
+    <ul>
+      <li>The breakpoints are stable. The two found with 3 stages (2000-04, 2009-03) survive almost unchanged with 6 (2000-06, 2009-03). Going to 7 only splits the bubble stage in two.</li>
+      <li>Monthly data gives the same 6-stage breakpoints in the same months. Changing the minimum stage length from 2 years to 1 or 3 leaves the first and last slopes at +14% and +18%. The middle moves: with a 1-year minimum, the financial-crisis stage shrinks to 2007-12 through 2008-12 at −31% a year.</li>
+      <li>With independent lines, the 5-stage result is 1994-11, 1999-12, 2002-10, 2008-09 with slopes of +13.6%, +43.9%, −43.7%, +10.2% and +18.1%. It tells the same story as the joined version.</li>
+    </ul>
+    <p>The 17.6 years since March 2009 remain a single straight line. The joined fit does not split it even at 7 stages. The independent fit cuts at 2022-05 when given 6 stages (+18.8% a year before, +25.6% after), but total error only drops from 0.103 to 0.097. The AI rally cannot yet be told apart from the trend in place since 2009.</p>
+  </div>
 </section>
 
 <section id="context">
-  <h2>和科技、人口放在一起看</h2>
-  <div class="table-scroll"><table class="ctx" aria-label="各阶段的指数斜率、人口和互联网用户">
-    <thead><tr><th>阶段</th><th class="num">指数斜率</th><th class="num">世界人口</th><th class="num">互联网用户</th><th>同期的科技与市场</th></tr></thead>
+  <h2><span data-l="zh">和科技、人口放在一起看</span><span data-l="en">Alongside technology and population</span></h2>
+  <div class="table-scroll"><table class="ctx">
+    <thead><tr>
+      <th><span data-l="zh">阶段</span><span data-l="en">Stage</span></th>
+      <th class="num"><span data-l="zh">指数斜率</span><span data-l="en">Index slope</span></th>
+      <th class="num"><span data-l="zh">世界人口</span><span data-l="en">World population</span></th>
+      <th class="num"><span data-l="zh">互联网用户</span><span data-l="en">Internet users</span></th>
+      <th><span data-l="zh">同期的科技与市场</span><span data-l="en">Technology and markets</span></th>
+    </tr></thead>
     <tbody>
-      <tr><td class="nw">① 1985-10 → 1995-10</td><td class="num">+14.1%</td><td class="num">+1.69%<span class="sub">48.5 → 57.4 亿</span></td><td class="num">起步<span class="sub">1995 年约 0.39 亿</span></td><td>个人电脑普及。微软 1986 年上市，万维网 1991 年公开。</td></tr>
-      <tr><td class="nw">② 1995-10 → 2000-06</td><td class="num">+52.5%</td><td class="num">+1.44%<span class="sub">57.4 → 61.6 亿</span></td><td class="num">+60%<span class="sub">0.39 → 4.15 亿</span></td><td>网景上市和 Windows 95 都在 1995 年 8 月。1999 年末指数市盈率约 104 倍。</td></tr>
-      <tr><td class="nw">③ 2000-06 → 2002-07</td><td class="num">−44.8%</td><td class="num">+1.34%<span class="sub">61.6 → 63.3 亿</span></td><td class="num">+27%<span class="sub">4.15 → 6.66 亿</span></td><td>泡沫破裂。指数从 4,705 跌到 805，跌幅 83%。上网人数仍在增加。</td></tr>
-      <tr><td class="nw">④ 2002-07 → 2007-03</td><td class="num">+14.6%</td><td class="num">+1.28%<span class="sub">63.3 → 67.4 亿</span></td><td class="num">+16%<span class="sub">6.66 → 13.8 亿</span></td><td>宽带和搜索广告。Google 2004 年上市，中国 2001 年底加入 WTO。</td></tr>
-      <tr><td class="nw">⑤ 2007-03 → 2009-03</td><td class="num">−12.4%</td><td class="num">+1.27%<span class="sub">67.4 → 69.2 亿</span></td><td class="num">+14%<span class="sub">13.8 → 17.8 亿</span></td><td>金融危机。指数从 2,239 跌到 1,037，跌幅 54%。iPhone 在 2007 年 6 月发售。</td></tr>
-      <tr><td class="nw">⑥ 2009-03 → 现在</td><td class="num">+18.0%</td><td class="num">+1.08%<span class="sub">69.2 → 82.2 亿</span></td><td class="num">+8%<span class="sub">17.8 → 约 60 亿</span></td><td>智能手机、云计算、社交网络，2022 年底起是生成式 AI。2003 年以来成分股收入年增约 12% 到 13%，盈利约 20% 到 21%。</td></tr>
+      <tr><td class="nw">① 1985-10 → 1995-10</td><td class="num">+14.1%</td>
+        <td class="num">+1.69%<span class="sub"><span data-l="zh">48.5 → 57.4 亿</span><span data-l="en">4.85 → 5.74 bn</span></span></td>
+        <td class="num"><span data-l="zh">起步</span><span data-l="en">Starting</span><span class="sub"><span data-l="zh">1995 年约 0.39 亿</span><span data-l="en">about 39 m in 1995</span></span></td>
+        <td><span data-l="zh">个人电脑普及。微软 1986 年上市，万维网 1991 年公开。</span><span data-l="en">Personal computers spread. Microsoft listed in 1986; the World Wide Web opened to the public in 1991.</span></td></tr>
+      <tr><td class="nw">② 1995-10 → 2000-06</td><td class="num">+52.5%</td>
+        <td class="num">+1.44%<span class="sub"><span data-l="zh">57.4 → 61.6 亿</span><span data-l="en">5.74 → 6.16 bn</span></span></td>
+        <td class="num">+60%<span class="sub"><span data-l="zh">0.39 → 4.15 亿</span><span data-l="en">39 → 415 m</span></span></td>
+        <td><span data-l="zh">网景上市和 Windows 95 都在 1995 年 8 月。1999 年末指数市盈率约 104 倍。</span><span data-l="en">Netscape's IPO and Windows 95 both came in August 1995. The index P/E was about 104 at the end of 1999.</span></td></tr>
+      <tr><td class="nw">③ 2000-06 → 2002-07</td><td class="num">−44.8%</td>
+        <td class="num">+1.34%<span class="sub"><span data-l="zh">61.6 → 63.3 亿</span><span data-l="en">6.16 → 6.33 bn</span></span></td>
+        <td class="num">+27%<span class="sub"><span data-l="zh">4.15 → 6.66 亿</span><span data-l="en">415 → 666 m</span></span></td>
+        <td><span data-l="zh">泡沫破裂。指数从 4,705 跌到 805，跌幅 83%。上网人数仍在增加。</span><span data-l="en">The bubble burst. The index fell from 4,705 to 805, a drop of 83%. The number of people online kept rising.</span></td></tr>
+      <tr><td class="nw">④ 2002-07 → 2007-03</td><td class="num">+14.6%</td>
+        <td class="num">+1.28%<span class="sub"><span data-l="zh">63.3 → 67.4 亿</span><span data-l="en">6.33 → 6.74 bn</span></span></td>
+        <td class="num">+16%<span class="sub"><span data-l="zh">6.66 → 13.8 亿</span><span data-l="en">0.67 → 1.38 bn</span></span></td>
+        <td><span data-l="zh">宽带和搜索广告。Google 2004 年上市，中国 2001 年底加入 WTO。</span><span data-l="en">Broadband and search advertising. Google listed in 2004; China joined the WTO at the end of 2001.</span></td></tr>
+      <tr><td class="nw">⑤ 2007-03 → 2009-03</td><td class="num">−12.4%</td>
+        <td class="num">+1.27%<span class="sub"><span data-l="zh">67.4 → 69.2 亿</span><span data-l="en">6.74 → 6.92 bn</span></span></td>
+        <td class="num">+14%<span class="sub"><span data-l="zh">13.8 → 17.8 亿</span><span data-l="en">1.38 → 1.78 bn</span></span></td>
+        <td><span data-l="zh">金融危机。指数从 2,239 跌到 1,037，跌幅 54%。iPhone 在 2007 年 6 月发售。</span><span data-l="en">Financial crisis. The index fell from 2,239 to 1,037, a drop of 54%. The iPhone went on sale in June 2007.</span></td></tr>
+      <tr><td class="nw">⑥ 2009-03 → <span data-l="zh">现在</span><span data-l="en">now</span></td><td class="num">+18.0%</td>
+        <td class="num">+1.08%<span class="sub"><span data-l="zh">69.2 → 82.2 亿</span><span data-l="en">6.92 → 8.22 bn</span></span></td>
+        <td class="num">+8%<span class="sub"><span data-l="zh">17.8 → 约 60 亿</span><span data-l="en">1.78 → about 6 bn</span></span></td>
+        <td><span data-l="zh">智能手机、云计算、社交网络，2022 年底起是生成式 AI。2003 年以来成分股收入年增约 12% 到 13%，盈利约 20% 到 21%。</span><span data-l="en">Smartphones, cloud computing, social networks, and generative AI from late 2022. Since 2003, constituents' revenue has grown about 12% to 13% a year and earnings about 20% to 21%.</span></td></tr>
     </tbody></table></div>
-  <p class="note">百分比都是年化增长率。人口和互联网用户按整年计算，对应区间依次是 1985→1995、1995→2000、2000→2002、2002→2007、2007→2009、2009→2025。互联网用户数等于世界银行的上网人口比例乘以世界人口，2025 年采用 ITU 的估计。</p>
-  <div class="prose">
+  <p class="note"><span data-l="zh">百分比都是年化增长率。人口和互联网用户按整年计算，对应区间依次是 1985→1995、1995→2000、2000→2002、2002→2007、2007→2009、2009→2025。互联网用户数等于世界银行的上网人口比例乘以世界人口，2025 年采用 ITU 的估计。</span><span data-l="en">All percentages are annualised growth rates. Population and internet users are computed over whole years: 1985→1995, 1995→2000, 2000→2002, 2002→2007, 2007→2009 and 2009→2025. Internet users equal the World Bank's share of people online times world population; 2025 uses the ITU estimate.</span></p>
+  <div class="prose" data-l="zh">
     <ol>
       <li><strong>人口总量是背景，解释不了斜率的切换。</strong>世界人口年增速 40 年里从 1.7% 慢慢降到 1.1%，阶段之间只差 0.6 个百分点。指数各阶段的斜率从 −45% 到 +52%，差了近 100 个百分点。</li>
       <li><strong>把人口和技术连起来的量是联网人口。</strong>1995 到 2000 年互联网用户增长约 10 倍，正好是指数最陡的阶段。2002 到 2007 年用户每年增长 16%，指数每年 14.6%。</li>
@@ -257,11 +309,22 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <p>由此得到一个可以检验的假设：正常阶段的斜率接近盈利增速，指数偏离趋势线的幅度大致反映估值被拉伸的程度。下一步统计回调时可以直接检验，偏离越高，随后的回调是否越深、越频繁。</p>
     <p>另有一条推论，数据本身不能证明：互联网普及率已到 74%，世界人口年增不到 1%，新增用户能提供的空间有限。当前 18% 的斜率要延续，只能靠单用户收入继续提高。</p>
   </div>
+  <div class="prose" data-l="en">
+    <ol>
+      <li><strong>Total population is the backdrop and cannot explain the slope changes.</strong> World population growth eased from 1.7% to 1.1% a year over 40 years, a gap of 0.6 points between stages. The index slopes range from −45% to +52%, a gap of nearly 100 points.</li>
+      <li><strong>The quantity linking population to technology is the connected population.</strong> Internet users grew about tenfold from 1995 to 2000, exactly the index's steepest stage. From 2002 to 2007 users grew 16% a year and the index 14.6%.</li>
+      <li><strong>After 2009 that link breaks.</strong> User growth slowed to about 8% a year while the index slope rose to 18%. Nasdaq's research shows constituents' earnings growing much faster than revenue, so the source of growth moved from new users to revenue per user and margins.</li>
+      <li><strong>The bubble and the bust were mostly valuation.</strong> The P/E was about 104 at the end of 1999, still 113 at the end of 2000, and in the low 30s in 2025. From 2000 to 2002 the number of people online still grew 27% a year while the index fell 45% a year.</li>
+      <li><strong>Age structure explains only half.</strong> Geanakoplos and co-authors (2004) tied long P/E cycles to the US ratio of people aged 40–49 to those aged 20–29. It matched the 2000 peak and implied falling P/Es for roughly the next 20 years. After 2009 US valuations rose instead and the Nasdaq-100 gained 18% a year, so that prediction failed.</li>
+    </ol>
+    <p>This gives a testable hypothesis: slopes in normal stages sit close to earnings growth, and the index's distance from the trend roughly reflects how stretched valuation is. The next step, counting pullbacks, can test it directly: do higher deviations lead to deeper and more frequent pullbacks?</p>
+    <p>One further inference, which the data cannot prove: internet penetration is already 74% and world population grows less than 1% a year, so new users have little room left to give. For the current 18% slope to continue, revenue per user has to keep rising.</p>
+  </div>
 </section>
 
 <section id="method">
-  <h2>方法和局限</h2>
-  <div class="prose">
+  <h2><span data-l="zh">方法和局限</span><span data-l="en">Method and limits</span></h2>
+  <div class="prose" data-l="zh">
     <ul>
       <li>模型是 ln(指数) 对时间的分段线性回归。首尾相接的版本只允许斜率在断点处改变，用全局搜索找断点。各自独立的版本每段单独回归，允许水平跳变，用动态规划求精确最优。两者都要求每个阶段至少 2 年。断点在周线上搜索，直线参数在日线上估计。</li>
       <li>断点是事后才知道的。2000 年 3 月站在高点时，没有任何拟合能告诉你阶段已经结束。</li>
@@ -271,22 +334,37 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
       <li>连续拟合的断点是两条直线的交点，和实际的最高、最低点会差几个月。例如拟合断点是 2000-06，实际高点在 2000-03-27。</li>
     </ul>
   </div>
+  <div class="prose" data-l="en">
+    <ul>
+      <li>The model is a piecewise linear regression of ln(index) on time. The joined version lets only the slope change at a breakpoint and finds breakpoints by global search. The independent version fits each stage separately, allows the level to jump, and is solved exactly by dynamic programming. Both require every stage to last at least 2 years. Breakpoints are searched on weekly data; line parameters are estimated on daily data.</li>
+      <li>Breakpoints are known only in hindsight. Standing at the peak in March 2000, no fit could have told you the stage was over.</li>
+      <li>Daily data are strongly autocorrelated, so standard significance tests and BIC overstate the number of stages here. The stage count rests on the elbow in the error and on breakpoint stability, with no statistical test behind it.</li>
+      <li>In the 6-stage fit, moving one breakpoint alone until total error rises 5% gives these ranges: 1995-10 (1994-10 to 1996-09), 2000-06 (2000-04 to 2000-09), 2002-07 (2002-02 to 2002-10), 2007-03 (2005-10 to 2008-08) and 2009-03 (2008-09 to 2009-09). 2007-03 is the least certain.</li>
+      <li>The last stage ends today, so its slope will move as new data arrive. This is a price index and excludes dividends. There are no data before October 1985.</li>
+      <li>In the joined fit a breakpoint is where two lines meet, which can sit a few months from the actual high or low. The fitted breakpoint is 2000-06, for example, while the actual peak was on 2000-03-27.</li>
+    </ul>
+  </div>
 </section>
 
 <section id="next">
-  <h2>下一步：待定的三件事</h2>
+  <h2><span data-l="zh">下一步：待定的三件事</span><span data-l="en">Next: three open choices</span></h2>
   <div class="ask">
-    <ol>
+    <ol data-l="zh">
       <li><strong>回调以哪条趋势线为基准。</strong>我建议 6 段首尾相接。3 段更宏观，会把整个泡沫当成偏离。5 段各自独立会把金融危机当成阶段之间的一次跳变。</li>
       <li><strong>回调怎么定义。</strong>常见做法是从前期高点回落超过某个阈值，例如 5%、10%、20% 各统计一遍，按收盘价计算。</li>
       <li><strong>成分股要不要补齐。</strong>仓库里目前只有 10 只有完整历史，其余 91 只是近 2 年。指数层面的回调统计不受影响。</li>
+    </ol>
+    <ol data-l="en">
+      <li><strong>Which trend line pullbacks are measured against.</strong> I suggest the 6-stage joined fit. Three stages is more macro and treats the whole bubble as a deviation. Five independent lines treat the financial crisis as a jump between stages.</li>
+      <li><strong>How a pullback is defined.</strong> A common choice is a fall from the prior high beyond a threshold, counted separately at 5%, 10% and 20%, on closing prices.</li>
+      <li><strong>Whether to complete the constituent data.</strong> Only 10 stocks in the repository have full history; the other 91 have the last 2 years. Index-level pullback statistics are unaffected.</li>
     </ol>
   </div>
 </section>
 
 <section id="sources">
-  <h2>数据来源</h2>
-  <ul class="sources">
+  <h2><span data-l="zh">数据来源</span><span data-l="en">Sources</span></h2>
+  <ul class="sources" data-l="zh">
     <li>指数日线：Stooq（1985-10 至 2018-12）与 Yahoo Finance（2019-01 起），取自公开 GitHub 仓库 <a href="https://github.com/raja-grewal/stooq-commodities">raja-grewal/stooq-commodities</a> 和 <a href="https://github.com/Chief-rich/nasdaq100-data">Chief-rich/nasdaq100-data</a>。两者在 785 个重叠交易日上最大相差 0.00014%。原始文件在仓库的 data/raw/ 目录。</li>
     <li>世界人口：World Bank SP.POP.TOTL，取自 <a href="https://github.com/datasets/population">datasets/population</a>。</li>
     <li>上网人口比例：World Bank IT.NET.USER.ZS（<a href="https://www.indexmundi.com/facts/world/internet-penetration">1990–2020 年序列</a>）；2025 年为 <a href="https://www.itu.int/en/mediacentre/Pages/PR-2025-11-17-Facts-and-Figures.aspx">ITU Facts and Figures 2025</a> 的 60 亿人、74%。</li>
@@ -294,9 +372,17 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <li>市盈率：Nasdaq Index Research，<a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a>（2025 年 11 月）。</li>
     <li>年龄结构：Geanakoplos, Magill, Quinzii，<a href="https://www.brookings.edu/wp-content/uploads/2004/01/2004a_bpea_geanakoplos.pdf">Demography and the Long-Run Predictability of the Stock Market</a>（Brookings Papers, 2004）。</li>
   </ul>
+  <ul class="sources" data-l="en">
+    <li>Index daily data: Stooq (1985-10 to 2018-12) and Yahoo Finance (from 2019-01), taken from the public GitHub repositories <a href="https://github.com/raja-grewal/stooq-commodities">raja-grewal/stooq-commodities</a> and <a href="https://github.com/Chief-rich/nasdaq100-data">Chief-rich/nasdaq100-data</a>. The two differ by at most 0.00014% across 785 overlapping trading days. Raw files are in the stock repository's data/raw/ folder.</li>
+    <li>World population: World Bank SP.POP.TOTL, via <a href="https://github.com/datasets/population">datasets/population</a>.</li>
+    <li>Share of people online: World Bank IT.NET.USER.ZS (<a href="https://www.indexmundi.com/facts/world/internet-penetration">1990–2020 series</a>); 2025 is the 6 billion people, 74%, from <a href="https://www.itu.int/en/mediacentre/Pages/PR-2025-11-17-Facts-and-Figures.aspx">ITU Facts and Figures 2025</a>.</li>
+    <li>Constituent revenue and earnings growth: Nasdaq index research, <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a> and <a href="https://indexes.nasdaqomx.com/docs/Nasdaq-100_A%20Tale%20of%20Three%20Crises%20over%20Two%20Decades.pdf">A Tale of Three Crises over Two Decades</a>.</li>
+    <li>P/E: Nasdaq Index Research, <a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a> (November 2025).</li>
+    <li>Age structure: Geanakoplos, Magill, Quinzii, <a href="https://www.brookings.edu/wp-content/uploads/2004/01/2004a_bpea_geanakoplos.pdf">Demography and the Long-Run Predictability of the Stock Market</a> (Brookings Papers, 2004).</li>
+  </ul>
 </section>
 
-<footer class="foot">个人研究笔记，不构成投资建议。</footer>
+<footer class="foot"><span data-l="zh">个人研究笔记，不构成投资建议。</span><span data-l="en">Personal research notes. Not investment advice.</span></footer>
 
 </div>
 <script>
@@ -308,9 +394,53 @@ for (i = 0; i < N; i++) { acc += DATA.dd[i]; days[i] = acc; lnc[i] = Math.log(DA
 var T0 = Date.UTC(1985, 9, 1), D0 = days[0], D1 = days[N - 1];
 var NUM = ["①","②","③","④","⑤","⑥","⑦","⑧"];
 var MILESTONES = [
-  ["1986-03-13","微软上市",2],["1991-08-06","万维网公开",3],["1995-08-09","网景上市",1],["2000-03-27","泡沫见顶",1],
-  ["2004-08-19","Google 上市",2],["2007-06-29","iPhone 发售",1],["2008-09-15","雷曼破产",2],["2020-03-11","新冠大流行",2],["2022-11-30","ChatGPT 发布",1]
+  ["1986-03-13","微软上市","Microsoft IPO",2],["1991-08-06","万维网公开","Web goes public",3],["1995-08-09","网景上市","Netscape IPO",1],["2000-03-27","泡沫见顶","Dot-com peak",1],
+  ["2004-08-19","Google 上市","Google IPO",2],["2007-06-29","iPhone 发售","iPhone launch",1],["2008-09-15","雷曼破产","Lehman fails",2],["2020-03-11","新冠大流行","COVID pandemic",2],["2022-11-30","ChatGPT 发布","ChatGPT launch",1]
 ];
+var STR = {
+  zh: {
+    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与分段趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaCalc: "趋势线及其延长线，标出所选日期的点位", ariaChips: "快捷日期",
+    stage: "阶段", tipIndex: "指数", tipTrend: "趋势线", tipDev: "偏离",
+    above: function(p){ return "高 " + p; }, below: function(p){ return "低 " + p; },
+    when: function(d, num, fut, rate){ return d + " · 阶段 " + num + (fut ? " 的延长线" : "") + "，每年 " + rate; },
+    vsLast: "与最新收盘相比", lastClose: function(v, d){ return "最新收盘 " + v + "（" + d + "）"; },
+    closeDay: "当日收盘", closed: function(d){ return "当日休市，取 " + d; }, closeVsTrend: "当日收盘比趋势线",
+    range1s: "常见范围 ±1σ", maxDev: "本阶段出现过的最大偏离", to: " 至 ", afterData: "最新数据之后",
+    presets: ["今天", "今年年底", "1 年后", "3 年后", "5 年后", "10 年后"],
+    stageHead: ["阶段", "起止", "时长", "年化斜率", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"], yrs: function(y){ return y + " 年"; },
+    annualHead: ["年份", "年末收盘", "趋势线", "偏离", "阶段"],
+    kHead: ["阶段数", "首尾相接：残差 σ", "各自独立：残差 σ", "断点（首尾相接）"], kBtn: function(k){ return k + " 段"; }, approx: function(p){ return "约 ±" + p + "%"; }, none: "无", sep: "、",
+    tiles: function(o){ return [
+      ["典型拟合误差", o.err, "1 条直线 → 6 段直线"],
+      ["当前阶段的斜率", o.slope + " / 年", o.since + " 至今，已 " + o.years + " 年"],
+      ["现在相对趋势线", o.dev, o.lastDate + " 收盘 " + o.last + "，趋势线 " + o.trend],
+      ["距历史最高收盘", o.dd, "高点 " + o.peak + "（" + o.peakDate + "）"]]; },
+    meta: function(a, b, n, c0, c1){ return "日收盘 " + a + " 至 " + b + " · " + n + " 个交易日 · " + c0 + " → " + c1 + " 点"; },
+    mainTitle: function(k, fam){ return "指数与分段趋势线（" + k + " 段，" + (fam === "cont" ? "首尾相接" : "各自独立") + "）"; }
+  },
+  en: {
+    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with piecewise trend lines, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaCalc: "Trend line and its extension, with the selected date marked", ariaChips: "Quick dates",
+    stage: "Stage", tipIndex: "Index", tipTrend: "Trend", tipDev: "Deviation",
+    above: function(p){ return p + " above"; }, below: function(p){ return p + " below"; },
+    when: function(d, num, fut, rate){ return d + " · Stage " + num + (fut ? " extended" : "") + ", " + rate + " a year"; },
+    vsLast: "Vs. latest close", lastClose: function(v, d){ return "Latest close " + v + " (" + d + ")"; },
+    closeDay: "Close that day", closed: function(d){ return "Market closed; using " + d; }, closeVsTrend: "Close versus trend",
+    range1s: "Typical range ±1σ", maxDev: "Widest deviations in this stage", to: " to ", afterData: "After latest data",
+    presets: ["Today", "Year end", "+1 year", "+3 years", "+5 years", "+10 years"],
+    stageHead: ["Stage", "Period", "Length", "Annual slope", "Trend start → end", "Residual σ", "Highest deviation", "Lowest deviation"], yrs: function(y){ return y + " yr"; },
+    annualHead: ["Year", "Year-end close", "Trend", "Deviation", "Stage"],
+    kHead: ["Stages", "Joined: residual σ", "Independent: residual σ", "Breakpoints (joined)"], kBtn: function(k){ return k + (k === 1 ? " stage" : " stages"); }, approx: function(p){ return "about ±" + p + "%"; }, none: "None", sep: ", ",
+    tiles: function(o){ return [
+      ["Typical fit error", o.err, "1 line → 6 lines"],
+      ["Slope of the current stage", o.slope + " a year", "Since " + o.since + ", " + o.years + " years so far"],
+      ["Now versus trend", o.dev, o.lastDate + " close " + o.last + ", trend " + o.trend],
+      ["From record close", o.dd, "Peak " + o.peak + " (" + o.peakDate + ")"]]; },
+    meta: function(a, b, n, c0, c1){ return "Daily closes " + a + " to " + b + " · " + n + " trading days · " + c0 + " → " + c1; },
+    mainTitle: function(k, fam){ return "Index and piecewise trend (" + k + (k === "1" ? " stage, " : " stages, ") + (fam === "cont" ? "joined" : "independent") + ")"; }
+  }
+};
+var LANG = document.documentElement.getAttribute("data-lang") === "en" ? "en" : "zh";
+function L(k){ return STR[LANG][k]; }
 var state = { fam: "cont", K: "6", hover: -1 };
 var SVGNS = "http://www.w3.org/2000/svg";
 
@@ -338,7 +468,7 @@ function textW(s, px){ var w = 0, j, c; for (j = 0; j < s.length; j++) { c = s.c
 
 function fit(){ return DATA.fits[state.fam][state.K]; }
 function fitFn(fam, K){
-  var f = DATA.fits[fam][K], n, L;
+  var f = DATA.fits[fam][K], n, Ln;
   if (fam === "cont") {
     n = f.nodes;
     return function(d){
@@ -346,10 +476,10 @@ function fitFn(fam, K){
       return n[j][1] + (n[j + 1][1] - n[j][1]) * (d - n[j][0]) / (n[j + 1][0] - n[j][0]);
     };
   }
-  L = f.lines;
+  Ln = f.lines;
   return function(d){
-    var j = 0; while (j < L.length - 1 && d > L[j][2]) j++;
-    return L[j][1] + (L[j][3] - L[j][1]) * (d - L[j][0]) / (L[j][2] - L[j][0]);
+    var j = 0; while (j < Ln.length - 1 && d > Ln[j][2]) j++;
+    return Ln[j][1] + (Ln[j][3] - Ln[j][1]) * (d - Ln[j][0]) / (Ln[j][2] - Ln[j][0]);
   };
 }
 function stageOf(d){ var s = fit().segs, j = 0; while (j < s.length - 1 && d > s[j].b) j++; return j; }
@@ -379,10 +509,10 @@ function drawFrame(svg, g, yticks, ylab){
   var f = fit(), s = f.segs, j, x0, x1;
   for (j = 0; j < s.length; j++) {
     x0 = j === 0 ? g.l : g.x(s[j].a); x1 = j === s.length - 1 ? g.l + g.pw : g.x(s[j + 1].a);
-    if (j % 2 === 1) el("rect", { x: x0, y: g.t, width: Math.max(0, x1 - x0), height: g.ph + (g.extra || 0), "class": "g-band" }, svg);
+    if (j % 2 === 1) el("rect", { x: x0, y: g.t, width: Math.max(0, x1 - x0), height: g.ph, "class": "g-band" }, svg);
   }
   yticks.forEach(function(v){ var Y = g.y(v); el("line", { x1: g.l, x2: g.l + g.pw, y1: Y, y2: Y, "class": "g-grid" }, svg); el("text", { x: g.l - 6, y: Y + 4, "text-anchor": "end", "class": "t-tick" }, svg, ylab(v)); });
-  for (j = 1; j < s.length; j++) { x0 = g.x(s[j].a); el("line", { x1: x0, x2: x0, y1: g.t, y2: g.t + g.ph + (g.extra || 0), "class": "g-break" }, svg); }
+  for (j = 1; j < s.length; j++) { x0 = g.x(s[j].a); el("line", { x1: x0, x2: x0, y1: g.t, y2: g.t + g.ph, "class": "g-break" }, svg); }
   el("line", { x1: g.l, x2: g.l + g.pw, y1: g.t + g.ph, y2: g.t + g.ph, "class": "g-axis" }, svg);
   yearTicks(g.W).forEach(function(yr){ var X = g.x(dayOf(yr + "-01-01")); el("line", { x1: X, x2: X, y1: g.t + g.ph, y2: g.t + g.ph + 4, "class": "g-axis" }, svg); el("text", { x: X, y: g.t + g.ph + 17, "text-anchor": "middle", "class": "t-tick" }, svg, String(yr)); });
 }
@@ -391,7 +521,7 @@ function drawMain(){
   var box = $("chart-main"), W = Math.max(280, box.clientWidth), narrow = W < 560, f = fit(), s = f.segs, fn = fitFn(state.fam, state.K);
   var g = { W: W, l: 40, t: 26, pw: W - 40 - 14, ph: narrow ? 250 : 360 };
   g.x = function(d){ return g.l + (d - D0) / (D1 - D0) * g.pw; };
-  var lo = Infinity, hi = -Infinity, j, v;
+  var lo = Infinity, hi = -Infinity, j;
   for (j = 0; j < N; j++) { fitv[j] = fn(days[j]); dev[j] = lnc[j] - fitv[j]; if (lnc[j] < lo) lo = lnc[j]; if (lnc[j] > hi) hi = lnc[j]; if (fitv[j] < lo) lo = fitv[j]; if (fitv[j] > hi) hi = fitv[j]; }
   lo -= 0.12; hi += 0.22;
   g.y = function(v){ return g.t + (hi - Math.log(v)) / (hi - lo) * g.ph; };
@@ -400,14 +530,14 @@ function drawMain(){
   // milestone lanes under the year labels
   var ms = [], rows = [[], [], []], maxRow = -1;
   MILESTONES.forEach(function(m){
-    if (narrow && m[2] > 1) return; if (W < 820 && m[2] > 2) return;
-    var X = g.x(dayOf(m[0])), w = textW(m[1], 11) + 4, left = X + 7 + w > g.l + g.pw, a = left ? X - 7 - w : X - 5, b = left ? X + 5 : X + 7 + w, r, ok, q;
-    for (r = 0; r < 3; r++) { ok = true; for (q = 0; q < rows[r].length; q++) if (a < rows[r][q][1] + 6 && b > rows[r][q][0] - 6) { ok = false; break; } if (ok) { rows[r].push([a, b]); ms.push({ x: X, row: r, label: m[1], left: left }); if (r > maxRow) maxRow = r; break; } }
+    if (narrow && m[3] > 1) return; if (W < 820 && m[3] > 2) return;
+    var label = LANG === "en" ? m[2] : m[1], X = g.x(dayOf(m[0])), w = textW(label, 11) + 4, left = X + 7 + w > g.l + g.pw, a = left ? X - 7 - w : X - 5, b = left ? X + 5 : X + 7 + w, r, ok, q;
+    for (r = 0; r < 3; r++) { ok = true; for (q = 0; q < rows[r].length; q++) if (a < rows[r][q][1] + 6 && b > rows[r][q][0] - 6) { ok = false; break; } if (ok) { rows[r].push([a, b]); ms.push({ x: X, row: r, label: label, left: left }); if (r > maxRow) maxRow = r; break; } }
   });
-  var laneTop = g.t + g.ph + 26; g.extra = 0;
+  var laneTop = g.t + g.ph + 26;
   var H = laneTop + (maxRow + 1) * 17 + 6;
   box.textContent = "";
-  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": "Nasdaq-100 日收盘与分段趋势线，对数坐标" }, box);
+  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaMain") }, box);
   var ticks = [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000].filter(function(v){ var l = Math.log(v); return l > lo + 0.05 && l < hi - 0.02; });
   drawFrame(svg, g, ticks, function(v){ return v >= 1000 ? (v / 1000) + "K" : String(v); });
 
@@ -423,7 +553,7 @@ function drawMain(){
   el("path", { d: linePath(xs, ys), "class": "l-index" }, svg);
   var d = "";
   if (state.fam === "cont") f.nodes.forEach(function(n, q){ d += (q ? "L" : "M") + g.x(n[0]).toFixed(1) + "," + g.yl(n[1]).toFixed(1); });
-  else f.lines.forEach(function(L){ d += "M" + g.x(L[0]).toFixed(1) + "," + g.yl(L[1]).toFixed(1) + "L" + g.x(L[2]).toFixed(1) + "," + g.yl(L[3]).toFixed(1); });
+  else f.lines.forEach(function(Ln){ d += "M" + g.x(Ln[0]).toFixed(1) + "," + g.yl(Ln[1]).toFixed(1) + "L" + g.x(Ln[2]).toFixed(1) + "," + g.yl(Ln[3]).toFixed(1); });
   el("path", { d: d, "class": "l-fit" }, svg);
   el("circle", { cx: xs[N - 1], cy: ys[N - 1], r: 4, "class": "dot" }, svg);
   el("text", { x: xs[N - 1], y: Math.max(12, recentTop(xs, ys) - 8), "text-anchor": "end", "class": "t-end" }, svg, fmtInt(DATA.c[N - 1]));
@@ -451,7 +581,7 @@ function drawDev(){
   g.y = function(v){ return g.t + (hi - v) / (hi - lo) * g.ph; };
   var H = g.t + g.ph + 24;
   box.textContent = "";
-  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": "指数相对趋势线的偏离百分比" }, box);
+  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaDev") }, box);
   var cand = [-80, -67, -50, -33, -20, -10, 10, 25, 50, 100, 200, 300, 500], ticks = [0], lastUp = g.y(0), lastDn = g.y(0);
   cand.filter(function(p){ return p > 0; }).forEach(function(p){ var l = Math.log(1 + p / 100), Y = g.y(l); if (l < hi && lastUp - Y >= 24) { ticks.push(l); lastUp = Y; } });
   cand.filter(function(p){ return p < 0; }).reverse().forEach(function(p){ var l = Math.log(1 + p / 100), Y = g.y(l); if (l > lo && Y - lastDn >= 24) { ticks.push(l); lastDn = Y; } });
@@ -479,7 +609,7 @@ function drawDev(){
 
 function tipRow(parent, keyCls, name, value){
   var r = h("div", "r", parent), n = h("span", "n", r);
-  h("i", keyCls ? "key " + keyCls : "nokey", n); n.appendChild(document.createTextNode(name));
+  h("i", keyCls === null ? "nokey" : "key " + keyCls, n); n.appendChild(document.createTextNode(name));
   h("b", "", r, value);
 }
 function setHover(idx, anchor){
@@ -492,10 +622,10 @@ function setHover(idx, anchor){
   m.fdot.setAttribute("cx", X); m.fdot.setAttribute("cy", m.yl(fitv[idx])); m.fdot.setAttribute("visibility", "visible");
   v.hdot.setAttribute("cx", X); v.hdot.setAttribute("cy", v.y(dev[idx])); v.hdot.setAttribute("visibility", "visible");
   tip.textContent = "";
-  h("div", "d", tip, iso(days[idx]) + " · 阶段 " + NUM[stageOf(days[idx])]);
-  tipRow(tip, "", "指数", fmtLvl(DATA.c[idx]));
-  tipRow(tip, "fit", "趋势线", fmtLvl(Math.exp(fitv[idx])));
-  tipRow(tip, null, "偏离", fmtPct(Math.exp(dev[idx]) - 1, 1));
+  h("div", "d", tip, iso(days[idx]) + " · " + L("stage") + " " + NUM[stageOf(days[idx])]);
+  tipRow(tip, "", L("tipIndex"), fmtLvl(DATA.c[idx]));
+  tipRow(tip, "fit", L("tipTrend"), fmtLvl(Math.exp(fitv[idx])));
+  tipRow(tip, null, L("tipDev"), fmtPct(Math.exp(dev[idx]) - 1, 1));
   var wr = wrap.getBoundingClientRect(), host = (anchor === "dev" ? $("chart-dev") : $("chart-main")).getBoundingClientRect();
   var tw = tip.offsetWidth, left = X + 14;
   if (left + tw > wr.width - 2) left = X - 14 - tw;
@@ -519,21 +649,21 @@ function todayDay(){ var t = new Date(); return Math.round((Date.UTC(t.getFullYe
 function addYears(d, n){ var t = new Date(T0 + d * 864e5); t.setUTCFullYear(t.getUTCFullYear() + n); return Math.round((t.getTime() - T0) / 864e5); }
 function clampDay(d){ return Math.max(D0, Math.min(CAP, d)); }
 function onOrBefore(d){ var lo = 0, hi = N - 1, mid; if (d >= days[hi]) return hi; while (hi - lo > 1) { mid = (lo + hi) >> 1; if (days[mid] <= d) lo = mid; else hi = mid; } return lo; }
-function hiLo(r){ return (r < 0 ? "低 " : "高 ") + Math.abs(r * 100).toFixed(1) + "%"; }
+function hiLo(r){ var p = Math.abs(r * 100).toFixed(1) + "%"; return r < 0 ? L("below")(p) : L("above")(p); }
 function crow(parent, k, v, sub){ var r = h("div", "crow", parent); h("span", "ck", r, k); var b = h("span", "cv", r, v); if (sub) h("span", "cs", b, sub); }
 function calcReadout(){
   var d = C.day, st = cStage(d), s = C.fit.segs[st], v = Math.exp(C.fn(d)), future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], idx, j, chips;
   $("calc-value").textContent = fmtLvl(v);
-  $("calc-when").textContent = iso(d) + " · 阶段 " + NUM[st] + (future ? " 的延长线" : "") + "，每年 " + fmtPct(s.cagr, 1);
+  $("calc-when").textContent = L("when")(iso(d), NUM[st], future, fmtPct(s.cagr, 1));
   rows.textContent = "";
-  if (future) crow(rows, "与最新收盘相比", hiLo(v / last - 1), "最新收盘 " + fmtInt(last) + "（" + iso(D1) + "）");
-  else { idx = onOrBefore(d); crow(rows, "当日收盘", fmtLvl(DATA.c[idx]), days[idx] === d ? "" : "当日休市，取 " + iso(days[idx])); crow(rows, "当日收盘比趋势线", hiLo(DATA.c[idx] / Math.exp(C.fn(days[idx])) - 1)); }
-  crow(rows, "常见范围 ±1σ", fmtLvl(v * Math.exp(-s.sigma)) + " – " + fmtLvl(v * Math.exp(s.sigma)));
-  crow(rows, "本阶段出现过的最大偏离", fmtLvl(v * (1 + s.dn)) + " – " + fmtLvl(v * (1 + s.up)), fmtPct(s.dn, 0) + " 至 " + fmtPct(s.up, 0));
+  if (future) crow(rows, L("vsLast"), hiLo(v / last - 1), L("lastClose")(fmtInt(last), iso(D1)));
+  else { idx = onOrBefore(d); crow(rows, L("closeDay"), fmtLvl(DATA.c[idx]), days[idx] === d ? "" : L("closed")(iso(days[idx]))); crow(rows, L("closeVsTrend"), hiLo(DATA.c[idx] / Math.exp(C.fn(days[idx])) - 1)); }
+  crow(rows, L("range1s"), fmtLvl(v * Math.exp(-s.sigma)) + " – " + fmtLvl(v * Math.exp(s.sigma)));
+  crow(rows, L("maxDev"), fmtLvl(v * (1 + s.dn)) + " – " + fmtLvl(v * (1 + s.up)), fmtPct(s.dn, 0) + L("to") + fmtPct(s.up, 0));
   $("calc-note").hidden = !future;
   if ($("calc-date").value !== iso(d)) $("calc-date").value = iso(d);
   chips = $("calc-chips").querySelectorAll("button");
-  for (j = 0; j < chips.length; j++) chips[j].setAttribute("aria-pressed", C.presets[j][1] === d ? "true" : "false");
+  for (j = 0; j < chips.length; j++) chips[j].setAttribute("aria-pressed", C.presets[j] === d ? "true" : "false");
 }
 function calcSel(){
   var g = C.g, d = C.day, X, Y, v = C.fn(d), idx, right;
@@ -557,13 +687,12 @@ function calcDraw(){
   g.yl = function(l){ return g.t + (hi - l) / (hi - lo) * g.ph; };
   var H = g.t + g.ph + 24;
   box.textContent = "";
-  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": "趋势线及其延长线，标出所选日期的点位" }, box);
+  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaCalc") }, box);
   // the part after the last data point is shaded
   el("rect", { x: g.x(D1), y: g.t, width: g.x(x1) - g.x(D1), height: g.ph, "class": "g-band" }, svg);
-  var ticks = [], k, m, v, dense;
-  for (k = 1; k <= 6; k++) [1, 2, 5].forEach(function(m){ v = m * Math.pow(10, k); if (Math.log(v) > lo + 0.04 && Math.log(v) < hi - 0.02) ticks.push(v); });
-  dense = g.ph / ticks.length < 26;
-  if (dense) ticks = ticks.filter(function(v){ var e = Math.log10(v); return Math.abs(e - Math.round(e)) < 1e-9; });
+  var ticks = [], k;
+  for (k = 1; k <= 6; k++) [1, 2, 5].forEach(function(m){ var v = m * Math.pow(10, k); if (Math.log(v) > lo + 0.04 && Math.log(v) < hi - 0.02) ticks.push(v); });
+  if (g.ph / ticks.length < 26) ticks = ticks.filter(function(v){ var e = Math.log10(v); return Math.abs(e - Math.round(e)) < 1e-9; });
   ticks.forEach(function(v){ var Y = g.yl(Math.log(v)); el("line", { x1: g.l, x2: g.l + g.pw, y1: Y, y2: Y, "class": "g-grid" }, svg); el("text", { x: g.l - 6, y: Y + 4, "text-anchor": "end", "class": "t-tick" }, svg, v >= 1000 ? (v / 1000) + "K" : String(v)); });
   el("line", { x1: g.l, x2: g.l + g.pw, y1: g.t + g.ph, y2: g.t + g.ph, "class": "g-axis" }, svg);
   var step = mode === "stage" ? (narrow ? 10 : 5) : 10, yr, X;
@@ -583,7 +712,7 @@ function calcDraw(){
   el("path", { d: d, "class": "l-fit" }, svg);
   el("path", { d: "M" + g.x(D1).toFixed(1) + "," + g.yl(C.fn(D1)).toFixed(1) + "L" + g.x(x1).toFixed(1) + "," + g.yl(C.fn(x1)).toFixed(1), "class": "l-fit-ext" }, svg);
   el("line", { x1: g.x(D1), x2: g.x(D1), y1: g.t, y2: g.t + g.ph, "class": "g-break" }, svg);
-  el("text", { x: g.x(D1) + 6, y: g.t + g.ph - 8, "class": "t-now" }, svg, "最新数据之后");
+  el("text", { x: g.x(D1) + 6, y: g.t + g.ph - 8, "class": "t-now" }, svg, L("afterData"));
   g.sline = el("line", { y1: g.t, y2: g.t + g.ph, "class": "sel-line" }, svg);
   g.adot = el("circle", { r: 4, "class": "dot", visibility: "hidden" }, svg);
   g.sdot = el("circle", { r: 5.5, "class": "dot fit big" }, svg);
@@ -597,24 +726,29 @@ function calcDraw(){
   C.g = g; calcSel();
 }
 function setDay(d){ var last = C.fit.segs[C.fit.segs.length - 1]; C.day = clampDay(d); calcReadout(); if (!C.g || (C.day >= last.a ? "stage" : "full") !== C.g.mode) calcDraw(); else calcSel(); }
+function calcChips(){
+  var box = $("calc-chips"), names = L("presets");
+  box.textContent = ""; box.setAttribute("aria-label", L("ariaChips"));
+  C.presets.forEach(function(p, q){ var b = h("button", "chip", box, names[q]); b.type = "button"; b.id = "calc-chip-" + q; b.setAttribute("data-i", q); });
+}
 function calcInit(){
-  var t = todayDay(), y = new Date(T0 + t * 864e5).getUTCFullYear(), box = $("calc-chips");
-  C.presets = [["今天", t], ["今年年底", dayOf(y + "-12-31")], ["1 年后", addYears(t, 1)], ["3 年后", addYears(t, 3)], ["5 年后", addYears(t, 5)], ["10 年后", addYears(t, 10)]].map(function(p){ return [p[0], clampDay(p[1])]; });
-  C.presets.forEach(function(p, q){ var b = h("button", "chip", box, p[0]); b.type = "button"; b.id = "calc-chip-" + q; b.setAttribute("data-i", q); });
-  box.addEventListener("click", function(ev){ var b = ev.target.closest("button"); if (b) setDay(C.presets[+b.getAttribute("data-i")][1]); });
+  var t = todayDay(), y = new Date(T0 + t * 864e5).getUTCFullYear();
+  C.presets = [t, dayOf(y + "-12-31"), addYears(t, 1), addYears(t, 3), addYears(t, 5), addYears(t, 10)].map(clampDay);
+  calcChips();
+  $("calc-chips").addEventListener("click", function(ev){ var b = ev.target.closest("button"); if (b) setDay(C.presets[+b.getAttribute("data-i")]); });
   $("calc-date").addEventListener("change", function(){ var v = this.value; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) setDay(dayOf(v)); else this.value = iso(C.day); });
   setDay(t);
 }
 
 function td(tr, cls, text, sub){ var c = h("td", cls, tr, text); if (sub) h("span", "sub", c, sub); return c; }
 function drawStageTable(){
-  var t = $("stage-table"), f = fit(), tr, head = ["阶段", "起止", "时长", "年化斜率", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"];
+  var t = $("stage-table"), f = fit(), tr;
   t.textContent = ""; tr = h("tr", "", h("thead", "", t));
-  head.forEach(function(x, q){ h("th", q >= 2 ? "num" : "", tr, x); });
+  L("stageHead").forEach(function(x, q){ h("th", q >= 2 ? "num" : "", tr, x); });
   var tb = h("tbody", "", t);
   f.segs.forEach(function(s, j){
     tr = h("tr", "", tb);
-    td(tr, "nw", NUM[j]); td(tr, "nw", iso(s.a) + " → " + iso(s.b)); td(tr, "num", s.years.toFixed(1) + " 年");
+    td(tr, "nw", NUM[j]); td(tr, "nw", iso(s.a) + " → " + iso(s.b)); td(tr, "num", L("yrs")(s.years.toFixed(1)));
     td(tr, "num", fmtPct(s.cagr, 1)); td(tr, "num", fmtLvl(s.l0) + " → " + fmtLvl(s.l1)); td(tr, "num", s.sigma.toFixed(3));
     td(tr, "num", fmtPct(s.up, 0), s.upd); td(tr, "num", fmtPct(s.dn, 0), s.dnd);
   });
@@ -622,7 +756,7 @@ function drawStageTable(){
 function drawAnnual(){
   var t = $("annual-table"), tr, tb, j, y, rows = [];
   t.textContent = ""; tr = h("tr", "", h("thead", "", t));
-  ["年份", "年末收盘", "趋势线", "偏离", "阶段"].forEach(function(x, q){ h("th", q && q < 4 ? "num" : "", tr, x); });
+  L("annualHead").forEach(function(x, q){ h("th", q && q < 4 ? "num" : "", tr, x); });
   tb = h("tbody", "", t);
   for (j = 0; j < N; j++) { y = iso(days[j]).slice(0, 4); if (j === N - 1 || iso(days[j + 1]).slice(0, 4) !== y) rows.push([y, j]); }
   rows.forEach(function(r){
@@ -633,36 +767,46 @@ function drawAnnual(){
 function drawKTable(){
   var t = $("k-table"), tr, tb, K, c, d, cell, b, mx = DATA.fits.cont["1"].rmse;
   t.textContent = ""; tr = h("tr", "", h("thead", "", t));
-  ["阶段数", "首尾相接：残差 σ", "各自独立：残差 σ", "断点（首尾相接）"].forEach(function(x, q){ h("th", q === 1 || q === 2 ? "num" : "", tr, x); });
+  L("kHead").forEach(function(x, q){ h("th", q === 1 || q === 2 ? "num" : "", tr, x); });
   tb = h("tbody", "", t);
   for (K = 1; K <= 7; K++) {
     c = DATA.fits.cont[K]; d = DATA.fits.disc[K];
     tr = h("tr", String(K) === state.K ? "on" : "", tb);
-    cell = h("td", "", tr); b = h("button", "kbtn", cell, K + " 段"); b.type = "button"; b.setAttribute("data-k", K); b.setAttribute("aria-pressed", String(K) === state.K ? "true" : "false");
-    [c, d].forEach(function(f){ cell = td(tr, "num", f.rmse.toFixed(3), "约 ±" + Math.round((Math.exp(f.rmse) - 1) * 100) + "%"); var bar = h("span", "bar", cell); bar.style.width = Math.round(f.rmse / mx * 100) + "%"; });
-    td(tr, "nw", c.nodes.slice(1, -1).map(function(n){ return iso(n[0]).slice(0, 7); }).join("、") || "无");
+    cell = h("td", "", tr); b = h("button", "kbtn", cell, L("kBtn")(K)); b.type = "button"; b.setAttribute("data-k", K); b.setAttribute("aria-pressed", String(K) === state.K ? "true" : "false");
+    [c, d].forEach(function(f){ cell = td(tr, "num", f.rmse.toFixed(3), L("approx")(Math.round((Math.exp(f.rmse) - 1) * 100))); var bar = h("span", "bar", cell); bar.style.width = Math.round(f.rmse / mx * 100) + "%"; });
+    td(tr, "nw", c.nodes.slice(1, -1).map(function(n){ return iso(n[0]).slice(0, 7); }).join(L("sep")) || L("none"));
   }
 }
 function drawTiles(){
   var box = $("tiles"), c1 = DATA.fits.cont["1"], c6 = DATA.fits.cont["6"], last = c6.segs[c6.segs.length - 1], hi = 0, j, f6 = fitFn("cont", "6");
   for (j = 1; j < N; j++) if (DATA.c[j] > DATA.c[hi]) hi = j;
-  var items = [
-    ["典型拟合误差", "±" + Math.round((Math.exp(c1.rmse) - 1) * 100) + "% → ±" + Math.round((Math.exp(c6.rmse) - 1) * 100) + "%", "1 条直线 → 6 段直线"],
-    ["当前阶段的斜率", fmtPct(last.cagr, 1) + " / 年", iso(last.a).slice(0, 7) + " 至今，已 " + last.years.toFixed(1) + " 年"],
-    ["现在相对趋势线", fmtPct(c6.dev, 1), iso(D1) + " 收盘 " + fmtInt(DATA.c[N - 1]) + "，趋势线 " + fmtInt(Math.exp(f6(D1)))],
-    ["距历史最高收盘", fmtPct(DATA.c[N - 1] / DATA.c[hi] - 1, 1), "高点 " + fmtInt(DATA.c[hi]) + "（" + iso(days[hi]) + "）"]
-  ];
+  var items = L("tiles")({
+    err: "±" + Math.round((Math.exp(c1.rmse) - 1) * 100) + "% → ±" + Math.round((Math.exp(c6.rmse) - 1) * 100) + "%",
+    slope: fmtPct(last.cagr, 1), since: iso(last.a).slice(0, 7), years: last.years.toFixed(1),
+    dev: fmtPct(c6.dev, 1), lastDate: iso(D1), last: fmtInt(DATA.c[N - 1]), trend: fmtInt(Math.exp(f6(D1))),
+    dd: fmtPct(DATA.c[N - 1] / DATA.c[hi] - 1, 1), peak: fmtInt(DATA.c[hi]), peakDate: iso(days[hi])
+  });
   box.textContent = "";
   items.forEach(function(it){ var t = h("div", "tile", box); h("div", "k", t, it[0]); h("div", "v", t, it[1]); h("div", "s", t, it[2]); });
-  $("meta-line").textContent = "日收盘 " + iso(D0) + " 至 " + iso(D1) + " · " + fmtInt(N) + " 个交易日 · " + DATA.c[0] + " → " + fmtInt(DATA.c[N - 1]) + " 点";
+  $("meta-line").textContent = L("meta")(iso(D0), iso(D1), fmtInt(N), DATA.c[0], fmtInt(DATA.c[N - 1]));
 }
 function syncControls(){
-  var kb = $("ctl-k").querySelectorAll("button"), fb = $("ctl-f").querySelectorAll("button"), j;
+  var kb = $("ctl-k").querySelectorAll("button"), fb = $("ctl-f").querySelectorAll("button"), lb = $("ctl-lang").querySelectorAll("button"), j;
   for (j = 0; j < kb.length; j++) kb[j].setAttribute("aria-pressed", kb[j].getAttribute("data-k") === state.K ? "true" : "false");
   for (j = 0; j < fb.length; j++) fb[j].setAttribute("aria-pressed", fb[j].getAttribute("data-fam") === state.fam ? "true" : "false");
-  $("main-title").textContent = "指数与分段趋势线（" + state.K + " 段，" + (state.fam === "cont" ? "首尾相接" : "各自独立") + "）";
+  for (j = 0; j < lb.length; j++) lb[j].setAttribute("aria-pressed", lb[j].getAttribute("data-lang") === LANG ? "true" : "false");
+  $("main-title").textContent = L("mainTitle")(state.K, state.fam);
+  $("wrap").setAttribute("aria-label", L("ariaWrap"));
 }
 function render(){ syncControls(); drawMain(); drawDev(); bindHover(); drawStageTable(); drawAnnual(); drawKTable(); state.hover = -1; $("tip").style.visibility = "hidden"; }
+function setLang(l, fromHash){
+  if (l !== "en" && l !== "zh") return;
+  LANG = l;
+  document.documentElement.setAttribute("data-lang", l); document.documentElement.lang = l === "zh" ? "zh-CN" : "en";
+  try { localStorage.setItem("ndx-lang", l); } catch (e) {}
+  if (!fromHash && (location.hash || "").slice(1) !== l) { try { location.hash = l; } catch (e) {} }
+  drawTiles(); render(); calcChips(); calcReadout(); calcDraw();
+}
 
 (function init(){
   var kc = $("ctl-k"), K, b;
@@ -670,6 +814,8 @@ function render(){ syncControls(); drawMain(); drawDev(); bindHover(); drawStage
   kc.addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t) { state.K = t.getAttribute("data-k"); render(); } });
   $("ctl-f").addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t) { state.fam = t.getAttribute("data-fam"); render(); } });
   $("k-table").addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t) { state.K = t.getAttribute("data-k"); render(); } });
+  $("ctl-lang").addEventListener("click", function(ev){ var t = ev.target.closest("button"); if (t && t.getAttribute("data-lang") !== LANG) setLang(t.getAttribute("data-lang"), false); });
+  window.addEventListener("hashchange", function(){ var hs = (location.hash || "").slice(1); if ((hs === "en" || hs === "zh") && hs !== LANG) setLang(hs, true); });
   var wrap = $("wrap");
   wrap.addEventListener("keydown", function(ev){
     var step = ev.shiftKey ? 21 : 1, cur = state.hover < 0 ? N - 1 : state.hover, nx = null;
