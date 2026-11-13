@@ -144,6 +144,9 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .dot.big{stroke-width:2.5}
 .t-now{fill:var(--muted);font-size:11px}
 #calc-chart svg{cursor:ew-resize}
+.calc-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px}
+.scale-ctl{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.seg.sm button{font-size:13px;padding:4px 12px}
 @media (max-width:760px){.calc{grid-template-columns:minmax(0,1fr);padding:16px}.calc-out .v{font-size:38px}}
 @media (prefers-reduced-motion:no-preference){.seg button,.chip{transition:background-color .12s,color .12s,border-color .12s}}
 </style>
@@ -161,13 +164,13 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 </header>
 
 <section id="calc">
-  <h2><span data-l="zh">按 ChatGPT 之后的趋势线，某一天的点位是多少</span><span data-l="en">Where the post-ChatGPT trend line puts the index on a given day</span></h2>
-  <p class="note"><span data-l="zh">只用最后一段直线计算，也就是阶段 ⑤，从 ChatGPT 发布的 2022-11-30 至今。选一个日期，或者直接在图上点击、拖动。</span><span data-l="en">Uses the last line only: stage ⑤, from the ChatGPT launch on 2022-11-30 to today. Pick a date, or click and drag on the chart.</span></p>
+  <h2><span data-l="zh">现阶段斜率外推</span><span data-l="en">Extrapolating the current slope</span></h2>
+  <p class="note"><span data-l="zh">取最后一段直线，也就是阶段 ⑤（从 ChatGPT 发布的 2022-11-30 至今），按它现在的斜率延长到 2035 年底，读出任意一天的趋势线点位。选一个日期，或者直接在图上点击、拖动。</span><span data-l="en">Takes the last line, stage ⑤ (from the ChatGPT launch on 2022-11-30 to today), extends it at its present slope to the end of 2035, and reads off the trend-line level for any day. Pick a date, or click and drag on the chart.</span></p>
   <div class="calc">
     <div class="calc-side">
       <div class="calc-pick">
         <label for="calc-date" id="calc-date-label"></label>
-        <input type="date" id="calc-date" max="2040-12-31">
+        <input type="date" id="calc-date" max="2035-12-31">
         <div class="chips" id="calc-chips" role="group"></div>
       </div>
       <div class="calc-out" aria-live="polite">
@@ -179,12 +182,16 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
       <p class="calc-note" id="calc-note"></p>
     </div>
     <div class="calc-main">
+      <div class="calc-head">
       <div class="legend">
         <span><i class="key"></i><span data-l="zh">日收盘</span><span data-l="en">Daily close</span></span>
         <span><i class="key fit"></i><span data-l="zh">阶段 ⑤ 趋势线</span><span data-l="en">Stage ⑤ trend line</span></span>
         <span><i class="key ext"></i><span data-l="zh">延长线</span><span data-l="en">Extension</span></span>
         <span><i class="swatch"></i><span data-l="zh">常见范围 ±1σ</span><span data-l="en">Typical range ±1σ</span></span>
       </div>
+      <div class="scale-ctl"><span class="k" aria-hidden="true"><span data-l="zh">纵轴</span><span data-l="en">Y axis</span></span><div class="seg sm" id="calc-scale" role="group"><button type="button" data-scale="log" aria-pressed="true"><span data-l="zh">对数</span><span data-l="en">Log</span></button><button type="button" data-scale="lin" aria-pressed="false"><span data-l="zh">线性</span><span data-l="en">Linear</span></button></div></div>
+      </div>
+      <p class="card-sub" id="calc-scale-note"></p>
       <div class="chart" id="calc-chart"></div>
     </div>
   </div>
@@ -355,12 +362,13 @@ var STR = {
     perYr: "/年", stage: "阶段", unfitted: "下跌区间，未拟合", tipIndex: "指数", tipTrend: "趋势线", tipDev: "偏离", tipHigh: "距前高", atHigh: "新高",
     above: function(p){ return "高 " + p; }, below: function(p){ return "低 " + p; },
     when: function(d, num, fut, rate){ return d + " · 阶段 " + num + (fut ? " 的延长线" : "") + "，每年 " + rate; },
-    dateLabel: function(a){ return "日期（" + a + " 至 2040-12-31）"; },
+    dateLabel: function(a){ return "日期（" + a + " 至 2035-12-31）"; },
+    ariaScale: "纵轴刻度", scaleLog: "对数坐标：相同的涨幅占相同的高度，所以固定的年增长率是一条直线。", scaleLin: "线性坐标：纵轴是实际点位，同样的年增长率会显示成越来越陡的曲线。",
     vsLast: "与最新收盘相比", lastClose: function(v, d){ return "最新收盘 " + v + "（" + d + "）"; },
     closeDay: "当日收盘", closed: function(d){ return "当日休市，取 " + d; }, closeVsTrend: "当日收盘比趋势线",
     range1s: "常见范围 ±1σ", maxDev: "本阶段出现过的最大偏离", to: " 至 ", afterData: "最新数据之后",
     calcNote: function(o){ return "未来的数值是把 ChatGPT 发布以来这条直线按原斜率延长得到的，只在这个阶段继续的前提下成立。这条线只有 " + o.years + " 年数据，斜率每年 " + o.rate + "，仅次于阶段 ② 的 " + o.rate2 + "，而阶段 ② 以 " + o.fall + "% 的下跌结束。这是推算，不是预测。"; },
-    presets: ["今天", "今年年底", "1 年后", "3 年后", "5 年后", "10 年后"],
+    presets: ["今天", "今年年底", "1 年后", "3 年后", "5 年后", "2035 年底"],
     stageHead: ["阶段", "年化斜率", "起止", "段内最大回撤", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"], yrs: function(y){ return y + " 年"; },
     fallHead: ["下跌", "最大跌幅", "前高", "低点", "历时", "收复前高"],
     fallName: { dotcom: "互联网泡沫破裂", gfc: "金融危机", covid: "新冠冲击", rates: "加息熊市" },
@@ -374,12 +382,13 @@ var STR = {
     perYr: "/yr", stage: "Stage", unfitted: "Fall, not fitted", tipIndex: "Index", tipTrend: "Trend", tipDev: "Deviation", tipHigh: "From prior high", atHigh: "New high",
     above: function(p){ return p + " above"; }, below: function(p){ return p + " below"; },
     when: function(d, num, fut, rate){ return d + " · Stage " + num + (fut ? " extended" : "") + ", " + rate + " a year"; },
-    dateLabel: function(a){ return "Date (" + a + " to 2040-12-31)"; },
+    dateLabel: function(a){ return "Date (" + a + " to 2035-12-31)"; },
+    ariaScale: "Vertical axis scale", scaleLog: "Log scale: equal percentage moves take equal height, so a constant annual growth rate is a straight line.", scaleLin: "Linear scale: the axis shows actual points, so the same annual growth rate turns into an ever steeper curve.",
     vsLast: "Vs. latest close", lastClose: function(v, d){ return "Latest close " + v + " (" + d + ")"; },
     closeDay: "Close that day", closed: function(d){ return "Market closed; using " + d; }, closeVsTrend: "Close versus trend",
     range1s: "Typical range ±1σ", maxDev: "Widest deviations in this stage", to: " to ", afterData: "After latest data",
     calcNote: function(o){ return "Future values extend the line fitted since the ChatGPT launch at its present slope. They hold only if this stage continues. The line rests on just " + o.years + " years of data and rises " + o.rate + " a year, second only to stage ② at " + o.rate2 + ", which ended in a " + o.fall + "% fall. Treat this as an extrapolation. It is no forecast."; },
-    presets: ["Today", "Year end", "+1 year", "+3 years", "+5 years", "+10 years"],
+    presets: ["Today", "Year end", "+1 year", "+3 years", "+5 years", "End of 2035"],
     stageHead: ["Stage", "Annual slope", "Period", "Largest pullback", "Trend start → end", "Residual σ", "Max above", "Max below"], yrs: function(y){ return y + " years"; },
     fallHead: ["Fall", "Maximum fall", "Prior high", "Low", "Duration", "Prior high regained"],
     fallName: { dotcom: "Dot-com bust", gfc: "Financial crisis", covid: "COVID shock", rates: "Rate-hike bear market" },
@@ -606,8 +615,10 @@ function bindHover(){
 }
 
 // ---- trend-line calculator: the last stage only, extended forward ----
-var C = { day: 0, g: null, drag: false, presets: [] };
-var CAP = dayOf("2040-12-31"), CMIN = LAST.a;
+var C = { day: 0, g: null, drag: false, presets: [], scale: "log" };
+var CAP = dayOf("2035-12-31"), CMIN = LAST.a;
+function niceStep(x){ var p = Math.pow(10, Math.floor(Math.log(x) / Math.LN10)), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+function fmtTick(v){ return v === 0 ? "0" : (v >= 1e6 ? (v / 1e6) + "M" : (v >= 1000 ? (v / 1000) + "K" : String(v))); }
 function cfn(d){ return LAST.y0 + (LAST.y1 - LAST.y0) * (d - LAST.a) / (LAST.b - LAST.a); }
 function todayDay(){ var t = new Date(); return Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - T0) / 864e5); }
 function addYears(d, n){ var t = new Date(T0 + d * 864e5); t.setUTCFullYear(t.getUTCFullYear() + n); return Math.round((t.getTime() - T0) / 864e5); }
@@ -643,28 +654,36 @@ function calcDraw(){
   var box = $("calc-chart"), W = Math.max(260, box.clientWidth), narrow = W < 440, s = LAST, j, x0 = CMIN, x1 = CAP;
   var g = { W: W, l: 46, t: 12, pw: W - 46 - 12, ph: narrow ? 220 : 300 };
   g.x = function(d){ return g.l + (d - x0) / (x1 - x0) * g.pw; };
-  var lo = Infinity, hi = -Infinity;
+  var lo = Infinity, hi = -Infinity, lin = C.scale === "lin", ticks = [], k, vmax, step;
   for (j = 0; j < N; j++) if (days[j] >= x0) { if (lnc[j] < lo) lo = lnc[j]; if (lnc[j] > hi) hi = lnc[j]; }
-  lo = Math.min(lo, cfn(x0) - s.sigma) - 0.1; hi = Math.max(hi, cfn(x1) + s.sigma) + 0.12;
-  g.yl = function(l){ return g.t + (hi - l) / (hi - lo) * g.ph; };
+  lo = Math.min(lo, cfn(x0) - s.sigma); hi = Math.max(hi, cfn(x1) + s.sigma);
+  if (lin) {   // linear: actual points from 0, so the constant-rate line bends upward
+    step = niceStep(Math.exp(hi) / 6); vmax = Math.ceil(Math.exp(hi) * 1.03 / step) * step;
+    g.yl = function(l){ return g.t + (1 - Math.exp(l) / vmax) * g.ph; };
+    for (k = 0; k <= vmax + step / 2; k += step) ticks.push(k);
+  } else {     // log: the constant-rate line is straight
+    lo -= 0.1; hi += 0.12;
+    g.yl = function(l){ return g.t + (hi - l) / (hi - lo) * g.ph; };
+    for (k = 1; k <= 7; k++) [1, 2, 5].forEach(function(m){ var v = m * Math.pow(10, k); if (Math.log(v) > lo + 0.04 && Math.log(v) < hi - 0.02) ticks.push(v); });
+  }
+  function yv(v){ return v > 0 ? g.yl(Math.log(v)) : g.t + g.ph; }
+  function pts(off, a, b){ var n = lin ? 120 : 1, out = [], q, d; for (q = 0; q <= n; q++) { d = a + (b - a) * q / n; out.push(g.x(d).toFixed(1) + "," + g.yl(cfn(d) + off).toFixed(1)); } return out; }
   var H = g.t + g.ph + 24;
   box.textContent = "";
   var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaCalc") }, box);
   // the part after the last data point is shaded
   el("rect", { x: g.x(D1), y: g.t, width: g.x(x1) - g.x(D1), height: g.ph, "class": "g-band" }, svg);
-  var ticks = [], k;
-  for (k = 1; k <= 7; k++) [1, 2, 5].forEach(function(m){ var v = m * Math.pow(10, k); if (Math.log(v) > lo + 0.04 && Math.log(v) < hi - 0.02) ticks.push(v); });
-  ticks.forEach(function(v){ var Y = g.yl(Math.log(v)); el("line", { x1: g.l, x2: g.l + g.pw, y1: Y, y2: Y, "class": "g-grid" }, svg); el("text", { x: g.l - 6, y: Y + 4, "text-anchor": "end", "class": "t-tick" }, svg, v >= 1e6 ? (v / 1e6) + "M" : (v >= 1000 ? (v / 1000) + "K" : String(v))); });
+  ticks.forEach(function(v){ var Y = yv(v); if (v > 0) el("line", { x1: g.l, x2: g.l + g.pw, y1: Y, y2: Y, "class": "g-grid" }, svg); el("text", { x: g.l - 6, y: Y + 4, "text-anchor": "end", "class": "t-tick" }, svg, fmtTick(v)); });
   el("line", { x1: g.l, x2: g.l + g.pw, y1: g.t + g.ph, y2: g.t + g.ph, "class": "g-axis" }, svg);
-  var yr, X;
-  for (yr = 2025; yr <= 2040; yr += 5) { X = g.x(dayOf(yr + "-01-01")); el("line", { x1: X, x2: X, y1: g.t + g.ph, y2: g.t + g.ph + 4, "class": "g-axis" }, svg); el("text", { x: X, y: g.t + g.ph + 17, "text-anchor": X > g.l + g.pw - 14 ? "end" : "middle", "class": "t-tick" }, svg, String(yr)); }
-  // ±1σ band around the line (straight in log space)
-  el("path", { d: "M" + g.x(x0).toFixed(1) + "," + g.yl(cfn(x0) + s.sigma).toFixed(1) + "L" + g.x(x1).toFixed(1) + "," + g.yl(cfn(x1) + s.sigma).toFixed(1) + "L" + g.x(x1).toFixed(1) + "," + g.yl(cfn(x1) - s.sigma).toFixed(1) + "L" + g.x(x0).toFixed(1) + "," + g.yl(cfn(x0) - s.sigma).toFixed(1) + "Z", "class": "a-band" }, svg);
+  var yr, X, perYr = g.pw / ((x1 - x0) / 365.25), ystep = perYr >= 44 ? 1 : (perYr >= 22 ? 2 : 4);
+  for (yr = 2023; yr <= 2035; yr += ystep) { X = g.x(dayOf(yr + "-01-01")); el("line", { x1: X, x2: X, y1: g.t + g.ph, y2: g.t + g.ph + 4, "class": "g-axis" }, svg); el("text", { x: X, y: g.t + g.ph + 17, "text-anchor": X > g.l + g.pw - 14 ? "end" : "middle", "class": "t-tick" }, svg, String(yr)); }
+  // ±1σ band around the line
+  el("path", { d: "M" + pts(s.sigma, x0, x1).join("L") + "L" + pts(-s.sigma, x1, x0).join("L") + "Z", "class": "a-band" }, svg);
   var xs = [], ys = [];
   for (j = 0; j < N; j++) if (days[j] >= x0) { xs.push(g.x(days[j])); ys.push(g.yl(lnc[j])); }
   el("path", { d: linePath(xs, ys), "class": "l-index" }, svg);
-  el("path", { d: "M" + g.x(x0).toFixed(1) + "," + g.yl(cfn(x0)).toFixed(1) + "L" + g.x(D1).toFixed(1) + "," + g.yl(cfn(D1)).toFixed(1), "class": "l-fit" }, svg);
-  el("path", { d: "M" + g.x(D1).toFixed(1) + "," + g.yl(cfn(D1)).toFixed(1) + "L" + g.x(x1).toFixed(1) + "," + g.yl(cfn(x1)).toFixed(1), "class": "l-fit-ext" }, svg);
+  el("path", { d: "M" + pts(0, x0, D1).join("L"), "class": "l-fit" }, svg);
+  el("path", { d: "M" + pts(0, D1, x1).join("L"), "class": "l-fit-ext" }, svg);
   el("line", { x1: g.x(D1), x2: g.x(D1), y1: g.t, y2: g.t + g.ph, "class": "g-break" }, svg);
   el("text", { x: g.x(D1) + 6, y: g.t + g.ph - 8, "class": "t-now" }, svg, L("afterData"));
   g.sline = el("line", { y1: g.t, y2: g.t + g.ph, "class": "sel-line" }, svg);
@@ -686,13 +705,21 @@ function calcText(){
   C.presets.forEach(function(p, q){ var b = h("button", "chip", box, names[q]); b.type = "button"; b.id = "calc-chip-" + q; b.setAttribute("data-i", q); });
   $("calc-date-label").textContent = L("dateLabel")(iso(CMIN));
   $("calc-note").textContent = L("calcNote")({ years: LAST.years.toFixed(1).replace(/\.0$/, ""), rate: fmtPct(LAST.cagr, 0), rate2: fmtPct(S[1].cagr, 0), fall: Math.round(-F[0].pct * 100) });
+  syncScale();
+}
+function syncScale(){
+  var bs = $("calc-scale").querySelectorAll("button"), j;
+  for (j = 0; j < bs.length; j++) bs[j].setAttribute("aria-pressed", bs[j].getAttribute("data-scale") === C.scale ? "true" : "false");
+  $("calc-scale").setAttribute("aria-label", L("ariaScale"));
+  $("calc-scale-note").textContent = L(C.scale === "lin" ? "scaleLin" : "scaleLog");
 }
 function calcInit(){
   var t = todayDay(), y = new Date(T0 + t * 864e5).getUTCFullYear();
-  C.presets = [t, dayOf(y + "-12-31"), addYears(t, 1), addYears(t, 3), addYears(t, 5), addYears(t, 10)].map(clampDay);
+  C.presets = [t, dayOf(y + "-12-31"), addYears(t, 1), addYears(t, 3), addYears(t, 5), CAP].map(clampDay);
   $("calc-date").min = iso(CMIN);
   calcText();
   $("calc-chips").addEventListener("click", function(ev){ var b = ev.target.closest("button"); if (b) setDay(C.presets[+b.getAttribute("data-i")]); });
+  $("calc-scale").addEventListener("click", function(ev){ var b = ev.target.closest("button"), sc = b && b.getAttribute("data-scale"); if (!sc || sc === C.scale) return; C.scale = sc; syncScale(); calcDraw(); });
   $("calc-date").addEventListener("change", function(){ var v = this.value; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) setDay(dayOf(v)); else this.value = iso(C.day); });
   setDay(t);
 }
