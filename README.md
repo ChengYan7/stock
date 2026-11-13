@@ -2,6 +2,8 @@
 
 Nasdaq-100 研究用的数据仓库。原始数据在 `data/raw/`，合并清洗后的指数日线在 `data/processed/`。
 
+**在线页面：<https://chengyan7.github.io/stock/>**，内容是 Nasdaq-100 分段直线拟合和现阶段斜率外推。默认显示英文，中文版是 <https://chengyan7.github.io/stock/#zh>。页面文件在 `gh-pages` 分支。
+
 ## 目录
 
 ```
