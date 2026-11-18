@@ -1,11 +1,11 @@
 # gh-pages
 
-这个分支只放网站文件，由 GitHub Pages 发布。
+This branch holds only the website files, which GitHub Pages publishes.
 
-- `index.html`：Nasdaq-100 分段直线拟合的交互页面，数据和脚本都内嵌在这一个文件里，不依赖外部资源。
-  页面是中英双语的，右上角可以切换。语言只由网址决定：不加后缀或加 `#en` 是英文，加 `#zh` 是中文。
-- `.nojekyll`：让 GitHub Pages 直接发布静态文件。
+- `index.html`: the interactive page for the Nasdaq-100 piecewise straight-line fit. Its data and scripts are all embedded in this one file, with no external dependencies.
+  The page is bilingual (English and Chinese), with a switch at the top right. The language is set by the URL alone: no suffix or `#en` gives English, `#zh` gives Chinese.
+- `.nojekyll`: makes GitHub Pages publish the static files as they are.
 
-数据和抓取脚本在 `main` 分支。
+The data and fetch scripts are on the `main` branch.
 
-开启方式：仓库 Settings → Pages → Source 选 “Deploy from a branch”，Branch 选 `gh-pages`、目录选 `/ (root)`，保存。
+To enable the site: in the repo go to Settings → Pages → Source, choose "Deploy from a branch", pick the `gh-pages` branch and the `/ (root)` folder, then save.
