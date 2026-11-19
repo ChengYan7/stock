@@ -57,6 +57,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,.chart-wrap:focus-visib
 .seg button:hover{background:var(--band)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
 .seg.lang button{font-size:13px;padding:4px 11px}
+.epigraph{margin:6px 0 4px;padding-left:14px;border-left:2px solid var(--axis);max-width:36em;color:var(--ink-2);font-size:15px;font-style:italic}
+.epigraph cite{display:block;margin-top:2px;font-size:13px;font-style:normal;color:var(--muted)}
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 16px 10px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 20px}
@@ -159,6 +161,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <p class="meta" id="meta-line"></p>
     <div class="seg lang" id="ctl-lang" role="group" aria-label="语言 / Language"><button type="button" id="lang-zh" data-lang="zh" lang="zh-CN">中文</button><button type="button" id="lang-en" data-lang="en" lang="en">English</button></div>
   </div>
+  <blockquote class="epigraph"><p><span data-l="zh">“大钱不在买进卖出，而在等待。”</span><span data-l="en">“The big money is not in the buying and the selling, but in the waiting.”</span></p><cite><span data-l="zh">— 查理·芒格</span><span data-l="en">— Charlie Munger</span></cite></blockquote>
   <h1><span data-l="zh">Nasdaq-100 分段直线拟合</span><span data-l="en">Nasdaq-100 Piecewise Trend Fit</span></h1>
   <p class="lede"><span data-l="zh">在对数坐标上，Nasdaq-100 的上涨可以分成五个直线阶段，中间被几次大跌隔开。每个阶段单独拟合一条直线。下跌过程比较随机，不做拟合，只标出从前高到低点的最大跌幅。</span><span data-l="en">On a log scale, the Nasdaq-100 rises in five straight-line stages separated by a few large falls. Each stage gets its own line. The falls are too erratic to fit, so only the maximum fall from the prior high to the low is marked.</span></p>
 </header>
