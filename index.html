@@ -123,11 +123,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .calc-side{display:flex;flex-direction:column;gap:16px;min-width:0}
 .calc-pick{display:flex;flex-direction:column;gap:10px}
 .calc-pick label{font-size:13px;color:var(--ink-2)}
-.calc-pick input[type="date"]{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--axis);border-radius:8px;padding:8px 12px;width:100%;max-width:220px;font-variant-numeric:tabular-nums}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{appearance:none;border:1px solid var(--axis);background:transparent;color:var(--ink);font:inherit;font-size:13px;border-radius:999px;padding:4px 12px;cursor:pointer}
-.chip:hover{background:var(--band)}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.calc-pick input{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--axis);border-radius:8px;padding:8px 12px;width:100%;max-width:220px;font-variant-numeric:tabular-nums}
 .calc-out{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--grid);padding-top:14px}
 .calc-out .k{font-size:13px;color:var(--ink-2)}
 .calc-out .v{font-size:44px;font-weight:650;line-height:1.15;letter-spacing:-.01em}
@@ -137,7 +133,6 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .crow .ck{color:var(--ink-2)}
 .crow .cv{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .crow .cs{display:block;font-weight:400;font-size:12px;color:var(--muted)}
-.calc-note{font-size:13px;color:var(--ink-2);background:var(--band);border-radius:8px;padding:10px 12px}
 .calc-main{display:flex;flex-direction:column;gap:6px;min-width:0}
 .key.ext{border-top:0;width:22px;height:2px;background:repeating-linear-gradient(90deg,var(--fit) 0 5px,transparent 5px 9px)}
 .swatch{display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--fit);opacity:.22}
@@ -151,7 +146,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .scale-ctl{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
 .seg.sm button{font-size:13px;padding:4px 12px}
 @media (max-width:760px){.calc{grid-template-columns:minmax(0,1fr);padding:16px}.calc-out .v{font-size:38px}}
-@media (prefers-reduced-motion:no-preference){.seg button,.chip{transition:background-color .12s,color .12s,border-color .12s}}
+@media (prefers-reduced-motion:no-preference){.seg button{transition:background-color .12s,color .12s,border-color .12s}}
 </style>
 </head>
 <body>
@@ -174,15 +169,17 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
       <div class="calc-pick">
         <label for="calc-date" id="calc-date-label"></label>
         <input type="date" id="calc-date" max="2028-12-31">
-        <div class="chips" id="calc-chips" role="group"></div>
+      </div>
+      <div class="calc-pick">
+        <label for="calc-pos"><span data-l="zh">我的仓位（当前市值）</span><span data-l="en">My position (current value)</span></label>
+        <input type="text" id="calc-pos" inputmode="decimal" autocomplete="off" placeholder="10,000">
       </div>
       <div class="calc-out" aria-live="polite">
-        <span class="k"><span data-l="zh">趋势线点位</span><span data-l="en">Trend-line level</span></span>
+        <span class="k" id="calc-k"></span>
         <span class="v" id="calc-value"></span>
         <span class="w" id="calc-when"></span>
       </div>
       <div class="crows" id="calc-rows"></div>
-      <p class="calc-note" id="calc-note"></p>
     </div>
     <div class="calc-main">
       <div class="calc-head">
@@ -202,7 +199,6 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 
 <section id="fit">
   <h2><span data-l="zh">拟合结果</span><span data-l="en">Fit results</span></h2>
-  <p class="note"><span data-l="zh">纵轴取对数后，直线的斜率就是年化增长率。五个上涨阶段各自拟合一条直线，互不相连。灰色区间是下跌过程，不做拟合，只标出从前高到低点的最大跌幅。</span><span data-l="en">With a log vertical axis, the slope of a straight line is the annual growth rate. Each of the five rising stages gets its own line, and the lines are not joined. Grey intervals are falls. They are not fitted; only the maximum fall from the prior high to the low is marked.</span></p>
 
   <div class="card">
     <div class="chart-wrap" id="wrap" tabindex="0">
@@ -361,17 +357,14 @@ var MILESTONES = [
 ];
 var STR = {
   zh: {
-    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaCalc: "阶段 ⑤ 的趋势线及其延长线，标出所选日期的点位", ariaChips: "快捷日期",
+    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaCalc: "阶段 ⑤ 的趋势线及其延长线，标出所选日期的点位",
     perYr: "/年", stage: "阶段", unfitted: "下跌区间，未拟合", tipIndex: "指数", tipTrend: "趋势线", tipDev: "偏离", tipHigh: "距前高", atHigh: "新高",
-    above: function(p){ return "高 " + p; }, below: function(p){ return "低 " + p; },
-    when: function(d, num, fut, rate){ return d + " · 阶段 " + num + (fut ? " 的延长线" : "") + "，每年 " + rate; },
+    kFut: "预测市值", kPast: "当日市值",
+    subFut: function(d, lvl, rate){ return d + " · 趋势线 " + lvl + "，每年 " + rate; },
+    subPast: function(d, lvl, c){ return d + " · 收盘 " + lvl + (c ? "（休市，取 " + c + "）" : ""); },
     dateLabel: function(a){ return "日期（" + a + " 至 2028-12-31）"; },
     ariaScale: "纵轴刻度", scaleLog: "对数坐标：相同的涨幅占相同的高度，所以固定的年增长率是一条直线。", scaleLin: "线性坐标：纵轴是实际点位，同样的年增长率会显示成越来越陡的曲线。",
-    vsLast: "与最新收盘相比", lastClose: function(v, d){ return "最新收盘 " + v + "（" + d + "）"; },
-    closeDay: "当日收盘", closed: function(d){ return "当日休市，取 " + d; }, closeVsTrend: "当日收盘比趋势线",
-    range1s: "常见范围 ±1σ", maxDev: "本阶段出现过的最大偏离", to: " 至 ", afterData: "最新数据之后",
-    calcNote: function(o){ return "未来的数值是把 ChatGPT 发布以来这条直线按原斜率延长得到的，只在这个阶段继续的前提下成立。这条线只有 " + o.years + " 年数据，斜率每年 " + o.rate + "，仅次于阶段 ② 的 " + o.rate2 + "，而阶段 ② 以 " + o.fall + "% 的下跌结束。这是推算，不是预测。"; },
-    presets: ["今天", "今年年底", "6 个月后", "1 年后", "2028 年底"],
+    change: "增幅", pnl: "盈亏", vsLatest: function(v, d){ return "相对最新收盘 " + v + "（" + d + "）"; }, afterData: "最新数据之后",
     stageHead: ["阶段", "年化斜率", "起止", "段内最大回撤", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"], yrs: function(y){ return y + " 年"; },
     fallHead: ["下跌", "最大跌幅", "前高", "低点", "历时", "收复前高"],
     fallName: { dotcom: "互联网泡沫破裂", gfc: "金融危机", covid: "新冠冲击", rates: "加息熊市" },
@@ -381,17 +374,14 @@ var STR = {
     meta: function(a, b, n, c0, c1){ return "日收盘 " + a + " 至 " + b + " · " + n + " 个交易日 · " + c0 + " → " + c1 + " 点"; }
   },
   en: {
-    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaCalc: "Stage 5 trend line and its extension, with the selected date marked", ariaChips: "Quick dates",
+    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaCalc: "Stage 5 trend line and its extension, with the selected date marked",
     perYr: "/yr", stage: "Stage", unfitted: "Fall, not fitted", tipIndex: "Index", tipTrend: "Trend", tipDev: "Deviation", tipHigh: "From prior high", atHigh: "New high",
-    above: function(p){ return p + " above"; }, below: function(p){ return p + " below"; },
-    when: function(d, num, fut, rate){ return d + " · Stage " + num + (fut ? " extended" : "") + ", " + rate + " a year"; },
+    kFut: "Projected value", kPast: "Value that day",
+    subFut: function(d, lvl, rate){ return d + " · trend line " + lvl + ", " + rate + " a year"; },
+    subPast: function(d, lvl, c){ return d + " · close " + lvl + (c ? " (market closed; using " + c + ")" : ""); },
     dateLabel: function(a){ return "Date (" + a + " to 2028-12-31)"; },
     ariaScale: "Vertical axis scale", scaleLog: "Log scale: equal percentage moves take equal height, so a constant annual growth rate is a straight line.", scaleLin: "Linear scale: the axis shows actual points, so the same annual growth rate turns into an ever steeper curve.",
-    vsLast: "Vs. latest close", lastClose: function(v, d){ return "Latest close " + v + " (" + d + ")"; },
-    closeDay: "Close that day", closed: function(d){ return "Market closed; using " + d; }, closeVsTrend: "Close versus trend",
-    range1s: "Typical range ±1σ", maxDev: "Widest deviations in this stage", to: " to ", afterData: "After latest data",
-    calcNote: function(o){ return "Future values extend the line fitted since the ChatGPT launch at its present slope. They hold only if this stage continues. The line rests on just " + o.years + " years of data and rises " + o.rate + " a year, second only to stage ② at " + o.rate2 + ", which ended in a " + o.fall + "% fall. Treat this as an extrapolation. It is no forecast."; },
-    presets: ["Today", "Year end", "+6 months", "+1 year", "End of 2028"],
+    change: "Change", pnl: "Gain / loss", vsLatest: function(v, d){ return "vs. latest close " + v + " (" + d + ")"; }, afterData: "After latest data",
     stageHead: ["Stage", "Annual slope", "Period", "Largest pullback", "Trend start → end", "Residual σ", "Max above", "Max below"], yrs: function(y){ return y + " years"; },
     fallHead: ["Fall", "Maximum fall", "Prior high", "Low", "Duration", "Prior high regained"],
     fallName: { dotcom: "Dot-com bust", gfc: "Financial crisis", covid: "COVID shock", rates: "Rate-hike bear market" },
@@ -618,30 +608,26 @@ function bindHover(){
 }
 
 // ---- trend-line calculator: the last stage only, extended forward ----
-var C = { day: 0, g: null, drag: false, presets: [], scale: "log" };
+var C = { day: 0, g: null, drag: false, scale: "log", pos: NaN };
 var CAP = dayOf("2028-12-31"), CMIN = LAST.a;
 function niceStep(x){ var p = Math.pow(10, Math.floor(Math.log(x) / Math.LN10)), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
 function fmtTick(v){ return v === 0 ? "0" : (v >= 1e6 ? (v / 1e6) + "M" : (v >= 1000 ? (v / 1000) + "K" : String(v))); }
 function cfn(d){ return LAST.y0 + (LAST.y1 - LAST.y0) * (d - LAST.a) / (LAST.b - LAST.a); }
 function todayDay(){ var t = new Date(); return Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - T0) / 864e5); }
-function addYears(d, n){ var t = new Date(T0 + d * 864e5); t.setUTCFullYear(t.getUTCFullYear() + n); return Math.round((t.getTime() - T0) / 864e5); }
-function addMonths(d, n){ var t = new Date(T0 + d * 864e5); t.setUTCMonth(t.getUTCMonth() + n); return Math.round((t.getTime() - T0) / 864e5); }
 function clampDay(d){ return Math.max(CMIN, Math.min(CAP, d)); }
-function hiLo(r){ var p = Math.abs(r * 100).toFixed(1) + "%"; return r < 0 ? L("below")(p) : L("above")(p); }
 function crow(parent, k, v, sub){ var r = h("div", "crow", parent); h("span", "ck", r, k); var b = h("span", "cv", r, v); if (sub) h("span", "cs", b, sub); }
+// future dates read the extended trend line, past dates the actual close; the position scales with the index from the latest close
 function calcReadout(){
-  var d = C.day, s = LAST, v = Math.exp(cfn(d)), future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], idx, j, chips;
-  $("calc-value").textContent = fmtLvl(v);
-  $("calc-when").textContent = L("when")(iso(d), NUM[S.length - 1], future, fmtPct(s.cagr, 1));
+  var d = C.day, future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], p = C.pos, idx, lvl, r;
+  if (future) { lvl = Math.exp(cfn(d)); $("calc-when").textContent = L("subFut")(iso(d), fmtLvl(lvl), fmtPct(LAST.cagr, 1)); }
+  else { idx = onOrBefore(d); lvl = DATA.c[idx]; $("calc-when").textContent = L("subPast")(iso(d), fmtLvl(lvl), days[idx] === d ? "" : iso(days[idx])); }
+  r = lvl / last - 1;
+  $("calc-k").textContent = L(future ? "kFut" : "kPast");
+  $("calc-value").textContent = p > 0 ? fmtInt(p * (1 + r)) : "—";
   rows.textContent = "";
-  if (future) crow(rows, L("vsLast"), hiLo(v / last - 1), L("lastClose")(fmtInt(last), iso(D1)));
-  else { idx = onOrBefore(d); crow(rows, L("closeDay"), fmtLvl(DATA.c[idx]), days[idx] === d ? "" : L("closed")(iso(days[idx]))); crow(rows, L("closeVsTrend"), hiLo(DATA.c[idx] / Math.exp(cfn(days[idx])) - 1)); }
-  crow(rows, L("range1s"), fmtLvl(v * Math.exp(-s.sigma)) + " – " + fmtLvl(v * Math.exp(s.sigma)));
-  crow(rows, L("maxDev"), fmtLvl(v * (1 + s.dn)) + " – " + fmtLvl(v * (1 + s.up)), fmtPct(s.dn, 0) + L("to") + fmtPct(s.up, 0));
-  $("calc-note").hidden = !future;
+  crow(rows, L("change"), fmtPct(r, 1), L("vsLatest")(fmtInt(last), iso(D1)));
+  if (p > 0) crow(rows, L("pnl"), (r < 0 ? "−" : "+") + fmtInt(Math.abs(p * r)));
   if ($("calc-date").value !== iso(d)) $("calc-date").value = iso(d);
-  chips = $("calc-chips").querySelectorAll("button");
-  for (j = 0; j < chips.length; j++) chips[j].setAttribute("aria-pressed", C.presets[j] === d ? "true" : "false");
 }
 function calcSel(){
   var g = C.g, d = C.day, X, Y, v = cfn(d), idx, right;
@@ -704,11 +690,7 @@ function calcDraw(){
 }
 function setDay(d){ C.day = clampDay(d); calcReadout(); if (!C.g) calcDraw(); else calcSel(); }
 function calcText(){
-  var box = $("calc-chips"), names = L("presets");
-  box.textContent = ""; box.setAttribute("aria-label", L("ariaChips"));
-  C.presets.forEach(function(p, q){ var b = h("button", "chip", box, names[q]); b.type = "button"; b.id = "calc-chip-" + q; b.setAttribute("data-i", q); });
   $("calc-date-label").textContent = L("dateLabel")(iso(CMIN));
-  $("calc-note").textContent = L("calcNote")({ years: LAST.years.toFixed(1).replace(/\.0$/, ""), rate: fmtPct(LAST.cagr, 0), rate2: fmtPct(S[1].cagr, 0), fall: Math.round(-F[0].pct * 100) });
   syncScale();
 }
 function syncScale(){
@@ -718,11 +700,15 @@ function syncScale(){
   $("calc-scale-note").textContent = L(C.scale === "lin" ? "scaleLin" : "scaleLog");
 }
 function calcInit(){
-  var t = todayDay(), y = new Date(T0 + t * 864e5).getUTCFullYear();
-  C.presets = [t, dayOf(y + "-12-31"), addMonths(t, 6), addYears(t, 1), CAP].map(clampDay);
+  var t = todayDay(), pos = $("calc-pos"), saved = null;
   $("calc-date").min = iso(CMIN);
   calcText();
-  $("calc-chips").addEventListener("click", function(ev){ var b = ev.target.closest("button"); if (b) setDay(C.presets[+b.getAttribute("data-i")]); });
+  // the position is remembered in this browser only
+  try { saved = localStorage.getItem("ndx-position"); } catch (e) {}
+  pos.value = saved === null ? "10,000" : saved;
+  function readPos(){ var v = parseFloat(pos.value.replace(/[\s,，]/g, "")); C.pos = v > 0 ? v : NaN; }
+  readPos();
+  pos.addEventListener("input", function(){ readPos(); try { localStorage.setItem("ndx-position", pos.value); } catch (e) {} calcReadout(); });
   $("calc-scale").addEventListener("click", function(ev){ var b = ev.target.closest("button"), sc = b && b.getAttribute("data-scale"); if (!sc || sc === C.scale) return; C.scale = sc; syncScale(); calcDraw(); });
   $("calc-date").addEventListener("change", function(){ var v = this.value; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) setDay(dayOf(v)); else this.value = iso(C.day); });
   setDay(t);
