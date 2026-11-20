@@ -293,27 +293,6 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
         <td class="num">+5%<span class="sub"><span data-l="zh">51.5 → 约 60 亿</span><span data-l="en">5.15 → about 6 bn</span></span></td>
         <td><span data-l="zh">生成式 AI。ChatGPT 在 2022 年 11 月 30 日发布，到 2026 年 2 月周活跃用户约 9 亿。亚马逊、微软、Alphabet 和 Meta 四家的资本开支从 2024 年的 2,240 亿美元升到 2025 年的约 4,100 亿，2026 年计划约 7,250 亿。</span><span data-l="en">Generative AI. ChatGPT launched on 30 November 2022 and had about 900 million weekly users by February 2026. Capital spending at Amazon, Microsoft, Alphabet and Meta rose from $224 billion in 2024 to about $410 billion in 2025, with roughly $725 billion planned for 2026.</span></td></tr>
     </tbody></table></div>
-  <p class="note"><span data-l="zh">指数一栏对上涨阶段是直线的年化斜率，对下跌是最大跌幅。人口和互联网用户是年化增长率，按整年计算，对应区间依次是 1985→1995、1995→2000、2000→2002、2002→2007、2007→2008、2008→2019、2019→2022、2022→2025。互联网用户数等于世界银行的上网人口比例乘以世界人口，2025 年采用 ITU 的估计。</span><span data-l="en">The index column shows the line's annual slope for rising stages and the maximum fall for falls. Population and internet users are annualised growth rates over whole years: 1985→1995, 1995→2000, 2000→2002, 2002→2007, 2007→2008, 2008→2019, 2019→2022 and 2022→2025. Internet users equal the World Bank's share of people online times world population; 2025 uses the ITU estimate.</span></p>
-  <div class="prose" data-l="zh">
-    <ol>
-      <li><strong>人口总量是背景，解释不了斜率的差别。</strong>世界人口年增速 40 年里从 1.7% 慢慢降到 0.9%。五个上涨阶段的斜率从每年 12% 到 51%，差别大得多。</li>
-      <li><strong>把人口和技术连起来的量是联网人口。</strong>1995 到 2000 年上网人数增长约 10 倍，正好是最陡的阶段 ②。2002 到 2007 年用户每年增长 16%，指数每年 12%。</li>
-      <li><strong>2008 年以后，指数的斜率跑到了用户增速前面。</strong>阶段 ④ 用户每年增长 9%，指数每年 17.5%。Nasdaq 的研究显示成分股盈利增速明显高于收入增速，增长的来源从新增用户转到了单用户收入和利润率。</li>
-      <li><strong>四次大跌都来自估值或宏观冲击，技术普及和人口都没有倒退。</strong>加息、信用危机、疫情各不相同，但每一次下跌期间上网人数都在继续增长。下跌的起点、深度和时间由冲击决定，短的 30 天，长的两年半，跌幅从 28% 到 83%，所以不做直线拟合。</li>
-      <li><strong>阶段 ⑤ 是五段里第二陡的，而且只有 4 年数据。</strong>互联网普及率已到 74%，新增用户每年只有约 5%，这一段靠的是 AI 带来的收入预期和资本开支。唯一更陡的阶段 ② 以 83% 的下跌结束。</li>
-      <li><strong>年龄结构的解释力只管了一半。</strong>Geanakoplos 等人 2004 年的研究用美国 40–49 岁与 20–29 岁人口之比解释市盈率的长周期，对上了 2000 年的高点，并预测此后约 20 年市盈率下行。2008 年之后美股估值不降反升，这个预测没有兑现。</li>
-    </ol>
-  </div>
-  <div class="prose" data-l="en">
-    <ol>
-      <li><strong>Total population is the backdrop and cannot explain the differences in slope.</strong> World population growth eased from 1.7% to 0.9% a year over 40 years. The slopes of the five rising stages range from 12% to 51% a year, a far wider spread.</li>
-      <li><strong>The quantity linking population to technology is the connected population.</strong> The number of people online grew about tenfold from 1995 to 2000, exactly the steepest stage, ②. From 2002 to 2007 users grew 16% a year and the index 12%.</li>
-      <li><strong>After 2008 the index slope ran ahead of user growth.</strong> In stage ④ users grew 9% a year and the index 17.5%. Nasdaq's research shows constituents' earnings growing much faster than revenue, so the source of growth moved from new users to revenue per user and margins.</li>
-      <li><strong>All four large falls came from valuation or macro shocks, while technology adoption and population never went backwards.</strong> Rate rises, a credit crisis and a pandemic differ from one another, yet the number of people online kept growing through every fall. A fall's start, depth and length are set by the shock: the shortest took 30 days and the longest two and a half years, and they ranged from 28% to 83%. That is why no line is fitted to them.</li>
-      <li><strong>Stage ⑤ is the second steepest of the five and has only 4 years of data.</strong> Internet penetration is already 74% and new users add only about 5% a year, so this stage rests on expected AI revenue and capital spending. The only steeper stage, ②, ended in an 83% fall.</li>
-      <li><strong>Age structure explains only half.</strong> Geanakoplos and co-authors (2004) tied long P/E cycles to the US ratio of people aged 40–49 to those aged 20–29. It matched the 2000 peak and implied falling P/Es for roughly the next 20 years. After 2008 US valuations rose instead, so that prediction failed.</li>
-    </ol>
-  </div>
 </section>
 
 <section id="sources">
@@ -374,7 +353,7 @@ var STR = {
     fallName: { dotcom: "互联网泡沫破裂", gfc: "金融危机", covid: "新冠冲击", rates: "加息熊市" },
     dur: function(n){ return n < 60 ? n + " 天" : (n < 548 ? Math.round(n / 30.44) + " 个月" : (n / 365.25).toFixed(1) + " 年"); },
     recIn: function(n){ return "距前高 " + (n < 548 ? Math.round(n / 30.44) + " 个月" : (n / 365.25).toFixed(1) + " 年"); }, notYet: "尚未收复",
-    annualHead: ["年份", "年末收盘", "趋势线", "偏离", "阶段"],
+    annualHead: ["年份", "年末收盘", "年度涨跌幅", "趋势线", "偏离", "阶段"],
     meta: function(a, b, n, c0, c1){ return "日收盘 " + a + " 至 " + b + " · " + n + " 个交易日 · " + c0 + " → " + c1 + " 点"; }
   },
   en: {
@@ -392,7 +371,7 @@ var STR = {
     fallName: { dotcom: "Dot-com bust", gfc: "Financial crisis", covid: "COVID shock", rates: "Rate-hike bear market" },
     dur: function(n){ return n < 60 ? n + " days" : (n < 548 ? Math.round(n / 30.44) + " months" : (n / 365.25).toFixed(1) + " years"); },
     recIn: function(n){ return (n < 548 ? Math.round(n / 30.44) + " months" : (n / 365.25).toFixed(1) + " years") + " after the high"; }, notYet: "Not yet",
-    annualHead: ["Year", "Year-end close", "Trend", "Deviation", "Stage"],
+    annualHead: ["Year", "Year-end close", "Annual change", "Trend", "Deviation", "Stage"],
     meta: function(a, b, n, c0, c1){ return "Daily closes " + a + " to " + b + " · " + n + " trading days · " + c0 + " → " + c1; }
   }
 };
@@ -778,12 +757,14 @@ function drawFallTable(){
 function drawAnnual(){
   var t = $("annual-table"), tr, tb, j, y, rows = [];
   t.textContent = ""; tr = h("tr", "", h("thead", "", t));
-  L("annualHead").forEach(function(x, q){ h("th", q && q < 4 ? "num" : "", tr, x); });
+  L("annualHead").forEach(function(x, q){ h("th", q && q < 5 ? "num" : "", tr, x); });
   tb = h("tbody", "", t);
   for (j = 0; j < N; j++) { y = iso(days[j]).slice(0, 4); if (j === N - 1 || iso(days[j + 1]).slice(0, 4) !== y) rows.push([y, j]); }
-  rows.forEach(function(r){
+  // annual change: year-end close over the previous year-end close (the last row is year to date)
+  rows.forEach(function(r, q){
     var k = r[1], on = stg[k] >= 0;
-    tr = h("tr", "", tb); td(tr, "nw", k === N - 1 ? iso(days[k]) : r[0]); td(tr, "num", fmtLvl(DATA.c[k])); td(tr, "num", on ? fmtLvl(Math.exp(fitv[k])) : "—");
+    tr = h("tr", "", tb); td(tr, "nw", k === N - 1 ? iso(days[k]) : r[0]); td(tr, "num", fmtLvl(DATA.c[k]));
+    td(tr, "num", q ? fmtPct(DATA.c[k] / DATA.c[rows[q - 1][1]] - 1, 1) : "—"); td(tr, "num", on ? fmtLvl(Math.exp(fitv[k])) : "—");
     td(tr, "num", on ? fmtPct(Math.exp(dev[k]) - 1, 1) : "—"); td(tr, "nw", on ? NUM[stg[k]] : "—");
   });
 }
