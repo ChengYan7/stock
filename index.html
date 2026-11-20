@@ -134,6 +134,9 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .crow .cv{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .crow .cs{display:block;font-weight:400;font-size:12px;color:var(--muted)}
 .calc-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.key.buy{border-top-color:var(--ink);border-top-width:1.5px}
+.l-buy{stroke:var(--ink);stroke-width:1.5}
+.h-buy{stroke:transparent;stroke-width:14;cursor:ns-resize;touch-action:none}
 .key.ext{border-top:0;width:22px;height:2px;background:repeating-linear-gradient(90deg,var(--fit) 0 5px,transparent 5px 9px)}
 .swatch{display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--fit);opacity:.22}
 .l-fit-ext{fill:none;stroke:var(--fit);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
@@ -171,8 +174,12 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
         <input type="date" id="calc-date" max="2028-12-31">
       </div>
       <div class="calc-pick">
-        <label for="calc-pos"><span data-l="zh">我的仓位（当前市值）</span><span data-l="en">My position (current value)</span></label>
+        <label for="calc-pos"><span data-l="zh">投入金额</span><span data-l="en">Amount invested</span></label>
         <input type="text" id="calc-pos" inputmode="decimal" autocomplete="off" placeholder="10,000">
+      </div>
+      <div class="calc-pick">
+        <label for="calc-buy"><span data-l="zh">买入点位（可拖动图中横线）</span><span data-l="en">Entry level (drag the line on the chart)</span></label>
+        <input type="text" id="calc-buy" inputmode="decimal" autocomplete="off">
       </div>
       <div class="calc-out" aria-live="polite">
         <span class="k" id="calc-k"></span>
@@ -187,6 +194,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
         <span><i class="key"></i><span data-l="zh">日收盘</span><span data-l="en">Daily close</span></span>
         <span><i class="key fit"></i><span data-l="zh">阶段 ⑤ 趋势线</span><span data-l="en">Stage ⑤ trend line</span></span>
         <span><i class="key ext"></i><span data-l="zh">延长线</span><span data-l="en">Extension</span></span>
+        <span><i class="key buy"></i><span data-l="zh">买入点位</span><span data-l="en">Entry level</span></span>
         <span><i class="swatch"></i><span data-l="zh">常见范围 ±1σ</span><span data-l="en">Typical range ±1σ</span></span>
       </div>
       <div class="scale-ctl"><span class="k" aria-hidden="true"><span data-l="zh">纵轴</span><span data-l="en">Y axis</span></span><div class="seg sm" id="calc-scale" role="group"><button type="button" data-scale="log" aria-pressed="true"><span data-l="zh">对数</span><span data-l="en">Log</span></button><button type="button" data-scale="lin" aria-pressed="false"><span data-l="zh">线性</span><span data-l="en">Linear</span></button></div></div>
@@ -364,7 +372,8 @@ var STR = {
     subPast: function(d, lvl, c){ return d + " · 收盘 " + lvl + (c ? "（休市，取 " + c + "）" : ""); },
     dateLabel: function(a){ return "日期（" + a + " 至 2028-12-31）"; },
     ariaScale: "纵轴刻度", scaleLog: "对数坐标：相同的涨幅占相同的高度，所以固定的年增长率是一条直线。", scaleLin: "线性坐标：纵轴是实际点位，同样的年增长率会显示成越来越陡的曲线。",
-    change: "增幅", pnl: "盈亏", vsLatest: function(v, d){ return "相对最新收盘 " + v + "（" + d + "）"; }, afterData: "最新数据之后",
+    change: "增幅", vsBuy: function(v){ return "相对买入点位 " + v; }, pnl: "盈亏", nowVal: "当前市值", lastClose: function(v, d){ return "最新收盘 " + v + "（" + d + "）"; },
+    buyTag: function(v){ return "买入 " + v; }, afterData: "最新数据之后",
     stageHead: ["阶段", "年化斜率", "起止", "段内最大回撤", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"], yrs: function(y){ return y + " 年"; },
     fallHead: ["下跌", "最大跌幅", "前高", "低点", "历时", "收复前高"],
     fallName: { dotcom: "互联网泡沫破裂", gfc: "金融危机", covid: "新冠冲击", rates: "加息熊市" },
@@ -381,7 +390,8 @@ var STR = {
     subPast: function(d, lvl, c){ return d + " · close " + lvl + (c ? " (market closed; using " + c + ")" : ""); },
     dateLabel: function(a){ return "Date (" + a + " to 2028-12-31)"; },
     ariaScale: "Vertical axis scale", scaleLog: "Log scale: equal percentage moves take equal height, so a constant annual growth rate is a straight line.", scaleLin: "Linear scale: the axis shows actual points, so the same annual growth rate turns into an ever steeper curve.",
-    change: "Change", pnl: "Gain / loss", vsLatest: function(v, d){ return "vs. latest close " + v + " (" + d + ")"; }, afterData: "After latest data",
+    change: "Change", vsBuy: function(v){ return "vs. entry level " + v; }, pnl: "Gain / loss", nowVal: "Current value", lastClose: function(v, d){ return "latest close " + v + " (" + d + ")"; },
+    buyTag: function(v){ return "Entry " + v; }, afterData: "After latest data",
     stageHead: ["Stage", "Annual slope", "Period", "Largest pullback", "Trend start → end", "Residual σ", "Max above", "Max below"], yrs: function(y){ return y + " years"; },
     fallHead: ["Fall", "Maximum fall", "Prior high", "Low", "Duration", "Prior high regained"],
     fallName: { dotcom: "Dot-com bust", gfc: "Financial crisis", covid: "COVID shock", rates: "Rate-hike bear market" },
@@ -608,7 +618,7 @@ function bindHover(){
 }
 
 // ---- trend-line calculator: the last stage only, extended forward ----
-var C = { day: 0, g: null, drag: false, scale: "log", pos: NaN };
+var C = { day: 0, g: null, drag: false, bdrag: false, scale: "log", pos: NaN, entry: NaN };
 var CAP = dayOf("2028-12-31"), CMIN = LAST.a;
 function niceStep(x){ var p = Math.pow(10, Math.floor(Math.log(x) / Math.LN10)), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
 function fmtTick(v){ return v === 0 ? "0" : (v >= 1e6 ? (v / 1e6) + "M" : (v >= 1000 ? (v / 1000) + "K" : String(v))); }
@@ -616,18 +626,39 @@ function cfn(d){ return LAST.y0 + (LAST.y1 - LAST.y0) * (d - LAST.a) / (LAST.b -
 function todayDay(){ var t = new Date(); return Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - T0) / 864e5); }
 function clampDay(d){ return Math.max(CMIN, Math.min(CAP, d)); }
 function crow(parent, k, v, sub){ var r = h("div", "crow", parent); h("span", "ck", r, k); var b = h("span", "cv", r, v); if (sub) h("span", "cs", b, sub); }
-// future dates read the extended trend line, past dates the actual close; the position scales with the index from the latest close
+// future dates read the extended trend line, past dates the actual close; growth is measured from the entry level
+function entryLvl(){ return C.entry > 0 ? C.entry : DATA.c[N - 1]; }
 function calcReadout(){
-  var d = C.day, future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], p = C.pos, idx, lvl, r;
+  var d = C.day, future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], p = C.pos, e = entryLvl(), idx, lvl, r;
   if (future) { lvl = Math.exp(cfn(d)); $("calc-when").textContent = L("subFut")(iso(d), fmtLvl(lvl), fmtPct(LAST.cagr, 1)); }
   else { idx = onOrBefore(d); lvl = DATA.c[idx]; $("calc-when").textContent = L("subPast")(iso(d), fmtLvl(lvl), days[idx] === d ? "" : iso(days[idx])); }
-  r = lvl / last - 1;
+  r = lvl / e - 1;
   $("calc-k").textContent = L(future ? "kFut" : "kPast");
   $("calc-value").textContent = p > 0 ? fmtInt(p * (1 + r)) : "—";
   rows.textContent = "";
-  crow(rows, L("change"), fmtPct(r, 1), L("vsLatest")(fmtInt(last), iso(D1)));
-  if (p > 0) crow(rows, L("pnl"), (r < 0 ? "−" : "+") + fmtInt(Math.abs(p * r)));
+  crow(rows, L("change"), fmtPct(r, 1), L("vsBuy")(fmtInt(e)));
+  if (p > 0) {
+    crow(rows, L("pnl"), (r < 0 ? "−" : "+") + fmtInt(Math.abs(p * r)));
+    crow(rows, L("nowVal"), fmtInt(p * last / e), L("lastClose")(fmtInt(last), iso(D1)));
+  }
   if ($("calc-date").value !== iso(d)) $("calc-date").value = iso(d);
+}
+// the horizontal entry line; hidden when the level is outside the plotted range
+function calcBuy(){
+  var g = C.g, v = entryLvl(), Y, on;
+  if (!g) return;
+  Y = g.yl(Math.log(v)); on = Y >= g.t - 0.5 && Y <= g.t + g.ph + 0.5;
+  [g.bline, g.bhit, g.blab].forEach(function(e){ show(e, on); });
+  if (!on) return;
+  g.bline.setAttribute("y1", Y); g.bline.setAttribute("y2", Y);
+  g.bhit.setAttribute("y1", Y); g.bhit.setAttribute("y2", Y);
+  g.blab.setAttribute("y", Y > g.t + 18 ? Y - 6 : Y + 15);
+  g.blab.textContent = L("buyTag")(fmtInt(v));
+}
+function setEntry(v){
+  C.entry = v; $("calc-buy").value = fmtInt(v);
+  try { localStorage.setItem("ndx-entry", $("calc-buy").value); } catch (e) {}
+  calcReadout(); calcBuy();
 }
 function calcSel(){
   var g = C.g, d = C.day, X, Y, v = cfn(d), idx, right;
@@ -646,14 +677,17 @@ function calcDraw(){
   g.x = function(d){ return g.l + (d - x0) / (x1 - x0) * g.pw; };
   var lo = Infinity, hi = -Infinity, lin = C.scale === "lin", ticks = [], k, vmax, step;
   for (j = 0; j < N; j++) if (days[j] >= x0) { if (lnc[j] < lo) lo = lnc[j]; if (lnc[j] > hi) hi = lnc[j]; }
+  var vmin = Math.exp(lo);   // lowest actual close in the window
   lo = Math.min(lo, cfn(x0) - s.sigma); hi = Math.max(hi, cfn(x1) + s.sigma);
-  if (lin) {   // linear: actual points from 0, so the constant-rate line bends upward
-    step = niceStep(Math.exp(hi) / 6); vmax = Math.ceil(Math.exp(hi) * 1.03 / step) * step;
-    g.yl = function(l){ return g.t + (1 - Math.exp(l) / vmax) * g.ph; };
-    for (k = 0; k <= vmax + step / 2; k += step) ticks.push(k);
+  if (lin) {   // linear: the axis starts at the lowest actual close, so the constant-rate line bends upward
+    step = niceStep((Math.exp(hi) - vmin) / 6); vmax = Math.ceil(Math.exp(hi) * 1.03 / step) * step;
+    g.yl = function(l){ return g.t + (1 - (Math.exp(l) - vmin) / (vmax - vmin)) * g.ph; };
+    g.yv = function(Y){ return vmin + (1 - (Y - g.t) / g.ph) * (vmax - vmin); };
+    for (k = Math.ceil(vmin / step) * step; k <= vmax + step / 2; k += step) ticks.push(k);
   } else {     // log: the constant-rate line is straight
     lo -= 0.1; hi += 0.12;
     g.yl = function(l){ return g.t + (hi - l) / (hi - lo) * g.ph; };
+    g.yv = function(Y){ return Math.exp(hi - (Y - g.t) / g.ph * (hi - lo)); };
     for (k = 1; k <= 7; k++) [1, 1.5, 2, 3, 5, 7].forEach(function(m){ var v = m * Math.pow(10, k); if (Math.log(v) > lo + 0.04 && Math.log(v) < hi - 0.02) ticks.push(v); });
   }
   function yv(v){ return v > 0 ? g.yl(Math.log(v)) : g.t + g.ph; }
@@ -681,12 +715,21 @@ function calcDraw(){
   g.sdot = el("circle", { r: 5.5, "class": "dot fit big" }, svg);
   g.slab = el("text", { "class": "t-end" }, svg, "");
   g.hit = el("rect", { x: g.l, y: g.t, width: g.pw, height: g.ph, fill: "transparent" }, svg);
+  // entry line: drawn above the click area so it can be dragged up and down
+  g.bline = el("line", { x1: g.l, x2: g.l + g.pw, "class": "l-buy" }, svg);
+  g.blab = el("text", { x: g.l + 6, "class": "t-end" }, svg, "");
+  g.bhit = el("line", { x1: g.l, x2: g.l + g.pw, "class": "h-buy" }, svg);
+  function bpick(ev){ var r = svg.getBoundingClientRect(), Y = (ev.clientY - r.top) * H / r.height; setEntry(Math.round(g.yv(Math.min(g.t + g.ph, Math.max(g.t, Y))))); }
+  g.bhit.addEventListener("pointerdown", function(ev){ C.bdrag = true; try { g.bhit.setPointerCapture(ev.pointerId); } catch (e) {} ev.preventDefault(); });
+  g.bhit.addEventListener("pointermove", function(ev){ if (C.bdrag) bpick(ev); });
+  function bend(){ C.bdrag = false; }
+  g.bhit.addEventListener("pointerup", bend); g.bhit.addEventListener("pointercancel", bend);
   function pick(ev){ var r = g.hit.getBoundingClientRect(), frac = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)); C.day = clampDay(Math.round(x0 + frac * (x1 - x0))); calcReadout(); calcSel(); }
   g.hit.addEventListener("pointerdown", function(ev){ C.drag = true; try { g.hit.setPointerCapture(ev.pointerId); } catch (e) {} pick(ev); });
   g.hit.addEventListener("pointermove", function(ev){ if (C.drag) pick(ev); });
   function end(){ C.drag = false; }
   g.hit.addEventListener("pointerup", end); g.hit.addEventListener("pointercancel", end);
-  C.g = g; calcSel();
+  C.g = g; calcSel(); calcBuy();
 }
 function setDay(d){ C.day = clampDay(d); calcReadout(); if (!C.g) calcDraw(); else calcSel(); }
 function calcText(){
@@ -700,7 +743,7 @@ function syncScale(){
   $("calc-scale-note").textContent = L(C.scale === "lin" ? "scaleLin" : "scaleLog");
 }
 function calcInit(){
-  var t = todayDay(), pos = $("calc-pos"), saved = null;
+  var t = todayDay(), pos = $("calc-pos"), buy = $("calc-buy"), saved = null, savedBuy = null;
   $("calc-date").min = iso(CMIN);
   calcText();
   // the position is remembered in this browser only
@@ -709,6 +752,12 @@ function calcInit(){
   function readPos(){ var v = parseFloat(pos.value.replace(/[\s,，]/g, "")); C.pos = v > 0 ? v : NaN; }
   readPos();
   pos.addEventListener("input", function(){ readPos(); try { localStorage.setItem("ndx-position", pos.value); } catch (e) {} calcReadout(); });
+  // entry level: the latest close until the user sets one
+  try { savedBuy = localStorage.getItem("ndx-entry"); } catch (e) {}
+  function readBuy(){ var v = parseFloat(buy.value.replace(/[\s,，]/g, "")); C.entry = v > 0 ? v : NaN; }
+  buy.placeholder = fmtInt(DATA.c[N - 1]);
+  if (savedBuy) { buy.value = savedBuy; readBuy(); } else buy.value = fmtInt(DATA.c[N - 1]);
+  buy.addEventListener("input", function(){ readBuy(); try { localStorage.setItem("ndx-entry", buy.value); } catch (e) {} calcReadout(); calcBuy(); });
   $("calc-scale").addEventListener("click", function(ev){ var b = ev.target.closest("button"), sc = b && b.getAttribute("data-scale"); if (!sc || sc === C.scale) return; C.scale = sc; syncScale(); calcDraw(); });
   $("calc-date").addEventListener("change", function(){ var v = this.value; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) setDay(dayOf(v)); else this.value = iso(C.day); });
   setDay(t);
