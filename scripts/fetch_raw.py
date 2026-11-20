@@ -25,10 +25,11 @@ from pathlib import Path
 
 RAW_GH = "https://raw.githubusercontent.com"
 
-# Pinned to the commits that were current on 2026-11-12.
+# Pinned commits. The Stooq file is a closed archive (ends 2022-02-10) and stays
+# on the 2026-11-12 commit; the other two were current on 2026-11-20.
 STOOQ_REPO, STOOQ_SHA = "raja-grewal/stooq-commodities", "c97a6147e9239d7bd6b5defddc353fc973972426"
-YAHOO_NDX_REPO, YAHOO_NDX_SHA = "Chief-rich/nasdaq100-data", "5ee4f521156cb43fed9d2a528c3f92eaa86e8b1a"
-CONSTITUENTS_REPO, CONSTITUENTS_SHA = "Gary-Strauss/NASDAQ100_Constituents", "7fe6a9d04d70ae46a2d51e891dd38f55a74f3923"
+YAHOO_NDX_REPO, YAHOO_NDX_SHA = "Chief-rich/nasdaq100-data", "7dbc0384b8502137d5b4dc1f368342d3eba55a76"
+CONSTITUENTS_REPO, CONSTITUENTS_SHA = "Gary-Strauss/NASDAQ100_Constituents", "8fe3553eba9d3bebc851d2fe40c3710f5cc6442a"
 # These two are refreshed daily upstream, so "latest" is fetched, not a pinned commit.
 SNAPSHOT_REPO, SNAPSHOT_BRANCH = "sungholee0221-ops/us-market-data", "data"
 PUBMARKS_REPO = "Pubmarks/datasets"
@@ -92,14 +93,29 @@ def main() -> None:
         px["date"] = pd.to_datetime(px["date"]).dt.strftime("%Y-%m-%d")
         dest = out / "constituents" / "yahoo_adjusted_ohlcv_2y"
         dest.mkdir(parents=True, exist_ok=True)
+        # Upstream rewrites its data branch every day and occasionally loses a
+        # ticker's history (SNDK on 2026-11-19 came back with only 5 rows). Keep
+        # the previous fetch so such a gap can be filled from it, but only with
+        # rows inside upstream's own 2-year window.
+        previous = {old.stem: pd.read_csv(old) for old in dest.glob("*.csv")}
         for old in dest.glob("*.csv"):
             old.unlink()
-        have = []
+        window_start = px["date"].min()
+        cols = ["date", "open", "high", "low", "close", "volume"]
+        have, backfilled = [], {}
         for t in tickers:
-            sub = px[px["ticker"] == t].sort_values("date")
+            sub = px[px["ticker"] == t].sort_values("date")[cols]
             if sub.empty:
                 continue
-            sub[["date", "open", "high", "low", "close", "volume"]].to_csv(dest / f"{t}.csv", index=False)
+            prev = previous.get(t)
+            if prev is not None:
+                keep = prev[(prev["date"] >= window_start) & (prev["date"] < sub["date"].iloc[0])]
+                if not keep.empty:
+                    backfilled[t] = {"rows": len(keep), "from": keep["date"].iloc[0], "to": keep["date"].iloc[-1],
+                                     "upstream_starts": sub["date"].iloc[0]}
+                    print(f"  {t}: upstream starts {sub['date'].iloc[0]}; kept {len(keep)} earlier rows from the previous fetch")
+                    sub = pd.concat([keep[cols], sub])
+            sub.to_csv(dest / f"{t}.csv", index=False)
             have.append(t)
         missing = sorted(set(tickers) - set(have))
         print(f"  {len(have)} tickers written to {dest}; missing upstream: {missing or 'none'}")
@@ -109,6 +125,11 @@ def main() -> None:
             "modified": "row subset: Nasdaq-100 members only; parquet split into one CSV per ticker",
             "upstream_meta": json.loads((tmp / "snap" / "meta.json").read_text()),
             "tickers": len(have), "missing": missing}
+        if backfilled:
+            manifest["sources"]["constituents/yahoo_adjusted_ohlcv_2y/"]["backfilled_from_previous_fetch"] = {
+                "note": "upstream history for these tickers was truncated; the earlier rows are carried over from "
+                        "this repo's previous fetch (adjusted as of that fetch)",
+                "tickers": backfilled}
 
         print("Constituents: full daily history for the members Pubmarks publishes")
         sha = clone(PUBMARKS_REPO, tmp / "pub")

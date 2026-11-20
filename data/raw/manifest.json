@@ -1,5 +1,5 @@
 {
-  "fetched_at_utc": "2026-11-12T21:32:44+00:00",
+  "fetched_at_utc": "2026-11-20T01:17:05+00:00",
   "sources": {
     "index/stooq_ndx_daily_close_1985-2022.csv": {
       "repo": "raja-grewal/stooq-commodities",
@@ -10,14 +10,14 @@
     },
     "index/yahoo_ndx_daily_ohlcv_2019-2026.csv": {
       "repo": "Chief-rich/nasdaq100-data",
-      "commit": "5ee4f521156cb43fed9d2a528c3f92eaa86e8b1a",
+      "commit": "7dbc0384b8502137d5b4dc1f368342d3eba55a76",
       "path": "data/ndx_daily/history.csv",
       "original_source": "Yahoo Finance (^NDX)",
       "modified": false
     },
     "constituents/nasdaq100_constituents.csv": {
       "repo": "Gary-Strauss/NASDAQ100_Constituents",
-      "commit": "7fe6a9d04d70ae46a2d51e891dd38f55a74f3923",
+      "commit": "8fe3553eba9d3bebc851d2fe40c3710f5cc6442a",
       "path": "data/nasdaq100_constituents.csv",
       "original_source": "Wikipedia: Nasdaq-100 components",
       "modified": false
@@ -25,25 +25,36 @@
     "constituents/yahoo_adjusted_ohlcv_2y/": {
       "repo": "sungholee0221-ops/us-market-data",
       "branch": "data",
-      "commit_at_fetch": "25581b6e0d9170d2a3bea2cd28c7728f859779d4",
+      "commit_at_fetch": "3d3a01926daace8d3e32ae08712e53a13cc3f0f1",
       "path": "prices.parquet",
       "original_source": "Yahoo Finance (split- and dividend-adjusted)",
       "modified": "row subset: Nasdaq-100 members only; parquet split into one CSV per ticker",
       "upstream_meta": {
-        "generated_at": "2026-11-12T08:51:49+00:00",
-        "last_date": "2026-11-11",
+        "generated_at": "2026-11-19T22:45:42+00:00",
+        "last_date": "2026-11-19",
         "period": "2y",
         "adjusted": true,
         "tickers": 548,
-        "rows": 272511,
+        "rows": 272113,
         "failed": []
       },
       "tickers": 101,
-      "missing": []
+      "missing": [],
+      "backfilled_from_previous_fetch": {
+        "note": "upstream history for these tickers was truncated; the earlier rows are carried over from this repo's previous fetch (adjusted as of that fetch)",
+        "tickers": {
+          "SNDK": {
+            "rows": 439,
+            "from": "2025-02-13",
+            "to": "2026-11-11",
+            "upstream_starts": "2026-11-13"
+          }
+        }
+      }
     },
     "constituents/pubmarks_ohlcv_full_history/": {
       "repo": "Pubmarks/datasets",
-      "commit_at_fetch": "58ae7a95bc74c31b732750e2e426eba71f68e2fa",
+      "commit_at_fetch": "e31dd3817bb2eccaa10d3b01c6f2efdbca5d3abf",
       "path": "data/stocks/<TICKER>/<YEAR>/ohlcv.csv",
       "original_source": "see upstream README",
       "modified": "per-year files concatenated into one CSV per ticker",
