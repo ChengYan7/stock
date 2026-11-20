@@ -166,16 +166,11 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 
 <section id="calc">
   <h2><span data-l="zh">现阶段斜率外推</span><span data-l="en">Extrapolating the current slope</span></h2>
-  <p class="note"><span data-l="zh">取最后一段直线，也就是阶段 ⑤（从 ChatGPT 发布的 2022-11-30 至今），按它现在的斜率延长到 2028 年底，读出任意一天的趋势线点位。选一个日期，或者直接在图上点击、拖动。</span><span data-l="en">Takes the last line, stage ⑤ (from the ChatGPT launch on 2022-11-30 to today), extends it at its present slope to the end of 2028, and reads off the trend-line level for any day. Pick a date, or click and drag on the chart.</span></p>
   <div class="calc">
     <div class="calc-side">
       <div class="calc-pick">
         <label for="calc-date" id="calc-date-label"></label>
         <input type="date" id="calc-date" max="2028-12-31">
-      </div>
-      <div class="calc-pick">
-        <label for="calc-pos"><span data-l="zh">投入金额</span><span data-l="en">Amount invested</span></label>
-        <input type="text" id="calc-pos" inputmode="decimal" autocomplete="off" placeholder="10,000">
       </div>
       <div class="calc-pick">
         <label for="calc-buy"><span data-l="zh">买入点位（可拖动图中横线）</span><span data-l="en">Entry level (drag the line on the chart)</span></label>
@@ -367,12 +362,12 @@ var STR = {
   zh: {
     ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaCalc: "阶段 ⑤ 的趋势线及其延长线，标出所选日期的点位",
     perYr: "/年", stage: "阶段", unfitted: "下跌区间，未拟合", tipIndex: "指数", tipTrend: "趋势线", tipDev: "偏离", tipHigh: "距前高", atHigh: "新高",
-    kFut: "预测市值", kPast: "当日市值",
-    subFut: function(d, lvl, rate){ return d + " · 趋势线 " + lvl + "，每年 " + rate; },
-    subPast: function(d, lvl, c){ return d + " · 收盘 " + lvl + (c ? "（休市，取 " + c + "）" : ""); },
+    kFut: "预测点位", kPast: "当日收盘",
+    subFut: function(d, num, rate){ return d + " · 阶段 " + num + " 延长线，每年 " + rate; },
+    subPast: function(d, c){ return d + (c ? "（休市，取 " + c + "）" : ""); },
     dateLabel: function(a){ return "日期（" + a + " 至 2028-12-31）"; },
     ariaScale: "纵轴刻度", scaleLog: "对数坐标：相同的涨幅占相同的高度，所以固定的年增长率是一条直线。", scaleLin: "线性坐标：纵轴是实际点位，同样的年增长率会显示成越来越陡的曲线。",
-    change: "增幅", vsBuy: function(v){ return "相对买入点位 " + v; }, pnl: "盈亏", nowVal: "当前市值", lastClose: function(v, d){ return "最新收盘 " + v + "（" + d + "）"; },
+    change: "增幅", vsBuy: function(v){ return "相对买入点位 " + v; },
     buyTag: function(v){ return "买入 " + v; }, afterData: "最新数据之后",
     stageHead: ["阶段", "年化斜率", "起止", "段内最大回撤", "趋势线起点 → 终点", "残差 σ", "最高偏离", "最低偏离"], yrs: function(y){ return y + " 年"; },
     fallHead: ["下跌", "最大跌幅", "前高", "低点", "历时", "收复前高"],
@@ -385,12 +380,12 @@ var STR = {
   en: {
     ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaCalc: "Stage 5 trend line and its extension, with the selected date marked",
     perYr: "/yr", stage: "Stage", unfitted: "Fall, not fitted", tipIndex: "Index", tipTrend: "Trend", tipDev: "Deviation", tipHigh: "From prior high", atHigh: "New high",
-    kFut: "Projected value", kPast: "Value that day",
-    subFut: function(d, lvl, rate){ return d + " · trend line " + lvl + ", " + rate + " a year"; },
-    subPast: function(d, lvl, c){ return d + " · close " + lvl + (c ? " (market closed; using " + c + ")" : ""); },
+    kFut: "Projected level", kPast: "Close that day",
+    subFut: function(d, num, rate){ return d + " · stage " + num + " extended, " + rate + " a year"; },
+    subPast: function(d, c){ return d + (c ? " (market closed; using " + c + ")" : ""); },
     dateLabel: function(a){ return "Date (" + a + " to 2028-12-31)"; },
     ariaScale: "Vertical axis scale", scaleLog: "Log scale: equal percentage moves take equal height, so a constant annual growth rate is a straight line.", scaleLin: "Linear scale: the axis shows actual points, so the same annual growth rate turns into an ever steeper curve.",
-    change: "Change", vsBuy: function(v){ return "vs. entry level " + v; }, pnl: "Gain / loss", nowVal: "Current value", lastClose: function(v, d){ return "latest close " + v + " (" + d + ")"; },
+    change: "Change", vsBuy: function(v){ return "vs. entry level " + v; },
     buyTag: function(v){ return "Entry " + v; }, afterData: "After latest data",
     stageHead: ["Stage", "Annual slope", "Period", "Largest pullback", "Trend start → end", "Residual σ", "Max above", "Max below"], yrs: function(y){ return y + " years"; },
     fallHead: ["Fall", "Maximum fall", "Prior high", "Low", "Duration", "Prior high regained"],
@@ -618,7 +613,7 @@ function bindHover(){
 }
 
 // ---- trend-line calculator: the last stage only, extended forward ----
-var C = { day: 0, g: null, drag: false, bdrag: false, scale: "log", pos: NaN, entry: NaN };
+var C = { day: 0, g: null, drag: false, bdrag: false, scale: "log", entry: NaN };
 var CAP = dayOf("2028-12-31"), CMIN = LAST.a;
 function niceStep(x){ var p = Math.pow(10, Math.floor(Math.log(x) / Math.LN10)), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
 function fmtTick(v){ return v === 0 ? "0" : (v >= 1e6 ? (v / 1e6) + "M" : (v >= 1000 ? (v / 1000) + "K" : String(v))); }
@@ -629,18 +624,13 @@ function crow(parent, k, v, sub){ var r = h("div", "crow", parent); h("span", "c
 // future dates read the extended trend line, past dates the actual close; growth is measured from the entry level
 function entryLvl(){ return C.entry > 0 ? C.entry : DATA.c[N - 1]; }
 function calcReadout(){
-  var d = C.day, future = d > D1, rows = $("calc-rows"), last = DATA.c[N - 1], p = C.pos, e = entryLvl(), idx, lvl, r;
-  if (future) { lvl = Math.exp(cfn(d)); $("calc-when").textContent = L("subFut")(iso(d), fmtLvl(lvl), fmtPct(LAST.cagr, 1)); }
-  else { idx = onOrBefore(d); lvl = DATA.c[idx]; $("calc-when").textContent = L("subPast")(iso(d), fmtLvl(lvl), days[idx] === d ? "" : iso(days[idx])); }
-  r = lvl / e - 1;
+  var d = C.day, future = d > D1, rows = $("calc-rows"), e = entryLvl(), idx, lvl;
+  if (future) { lvl = Math.exp(cfn(d)); $("calc-when").textContent = L("subFut")(iso(d), NUM[S.length - 1], fmtPct(LAST.cagr, 1)); }
+  else { idx = onOrBefore(d); lvl = DATA.c[idx]; $("calc-when").textContent = L("subPast")(iso(d), days[idx] === d ? "" : iso(days[idx])); }
   $("calc-k").textContent = L(future ? "kFut" : "kPast");
-  $("calc-value").textContent = p > 0 ? fmtInt(p * (1 + r)) : "—";
+  $("calc-value").textContent = fmtLvl(lvl);
   rows.textContent = "";
-  crow(rows, L("change"), fmtPct(r, 1), L("vsBuy")(fmtInt(e)));
-  if (p > 0) {
-    crow(rows, L("pnl"), (r < 0 ? "−" : "+") + fmtInt(Math.abs(p * r)));
-    crow(rows, L("nowVal"), fmtInt(p * last / e), L("lastClose")(fmtInt(last), iso(D1)));
-  }
+  crow(rows, L("change"), fmtPct(lvl / e - 1, 1), L("vsBuy")(fmtInt(e)));
   if ($("calc-date").value !== iso(d)) $("calc-date").value = iso(d);
 }
 // the horizontal entry line; hidden when the level is outside the plotted range
@@ -743,15 +733,9 @@ function syncScale(){
   $("calc-scale-note").textContent = L(C.scale === "lin" ? "scaleLin" : "scaleLog");
 }
 function calcInit(){
-  var t = todayDay(), pos = $("calc-pos"), buy = $("calc-buy"), saved = null, savedBuy = null;
+  var t = todayDay(), buy = $("calc-buy"), savedBuy = null;
   $("calc-date").min = iso(CMIN);
   calcText();
-  // the position is remembered in this browser only
-  try { saved = localStorage.getItem("ndx-position"); } catch (e) {}
-  pos.value = saved === null ? "10,000" : saved;
-  function readPos(){ var v = parseFloat(pos.value.replace(/[\s,，]/g, "")); C.pos = v > 0 ? v : NaN; }
-  readPos();
-  pos.addEventListener("input", function(){ readPos(); try { localStorage.setItem("ndx-position", pos.value); } catch (e) {} calcReadout(); });
   // entry level: the latest close until the user sets one
   try { savedBuy = localStorage.getItem("ndx-entry"); } catch (e) {}
   function readBuy(){ var v = parseFloat(buy.value.replace(/[\s,，]/g, "")); C.entry = v > 0 ? v : NaN; }
