@@ -72,16 +72,66 @@
       ]
     },
     "valuation/ndx_pe_trailing.csv": {
-      "original_source": "Siblis Research (2016-12 onward) and Nasdaq Index Research (1999-12, 2000-12)",
+      "original_source": "Siblis Research (2016-12 onward); Nasdaq Index Research (1999-12, 2000-12, 2019-04-30)",
       "urls": [
         "https://siblisresearch.com/data/nasdaq-100-pe-ratio/",
         "https://siblisresearch.com/api/v1/NDX/pe-trailing",
-        "https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100"
+        "https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100",
+        "https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf"
       ],
-      "fetched": "2026-11-22",
+      "fetched": "2026-11-22 (2019-04-30 point added the same day)",
       "method": "transcribed by hand from the public page, the free API response and the Nasdaq article; no file download was available",
       "definition": "trailing P/E = aggregate constituent market cap / aggregate trailing 12-month earnings (Siblis: normalised net income, one-offs removed)",
-      "coverage": "sparse: 2 points for 1999-2000, then year-ends 2016-2025 and selected month-ends to 2026-10. No free continuous series was found; 2001-2015 and pre-1999 are missing",
+      "coverage": "sparse: Nasdaq points for 1999-12, 2000-12 and 2019-04-30; Siblis year-ends 2016-2025 and selected month-ends to 2026-10. No free continuous same-definition series was found",
+      "modified": false
+    },
+    "valuation/ndx_annual_pe_nasdaq_approx_2001_2022.csv": {
+      "original_source": "Nasdaq, NDX Extended Presentation, December 2022, p.18 \"Nasdaq-100 Index: Valuations vs. Long-Run History\" (data as of 2022-12-30; Nasdaq, FactSet, Bloomberg)",
+      "urls": [
+        "https://indexes.nasdaq.com/docs/NDX_Extended%20Presentation_December%202022.pdf"
+      ],
+      "fetched": "2026-11-22",
+      "supplied_by": "repo owner (uploaded package Nasdaq100_PE_data_20261122.zip)",
+      "method": "2001 is the value printed on the chart (208.3); 2002-2022 are read from the vector path of the P/E line: PE = (433.200012 - y) * 150 / (433.200012 - 148.679993), one decimal. 2023-2024 estimates excluded",
+      "definition": "FY P/E as labelled on the chart; not confirmed to equal daily trailing 12-month P/E",
+      "encoding": "UTF-8 with BOM, Chinese column notes",
+      "modified": false
+    },
+    "valuation/ndx_forward_weekly_2001_2026.csv": {
+      "original_source": "History of Market, the JSON's 'forward' array: terminal 12-month blended-forward consensus P/E, weekly; upstream vendor not disclosed",
+      "urls": [
+        "https://historyofmarket.com/api/ndx/forward-pe.json",
+        "https://historyofmarket.com/nasdaq/ndx-forward-pe/"
+      ],
+      "license": "CC BY 4.0 (attribution: History of Market, historyofmarket.com)",
+      "fetched": "2026-11-22",
+      "supplied_by": "repo owner (uploaded package)",
+      "coverage": "2001-04-27 to 2026-08-05, 1,239 weekly rows, gap 2004-12-31 to 2006-07-28",
+      "encoding": "UTF-8 with BOM",
+      "modified": false
+    },
+    "valuation/ndx_forward_daily_separate_2026.csv": {
+      "original_source": "History of Market, the JSON's 'forwardOwn' array: FY1/FY2 consensus net income weighted by ETF holdings; a different method, keep separate",
+      "urls": [
+        "https://historyofmarket.com/api/ndx/forward-pe.json",
+        "https://historyofmarket.com/nasdaq/ndx-forward-pe/"
+      ],
+      "license": "CC BY 4.0 (attribution: History of Market, historyofmarket.com)",
+      "fetched": "2026-11-22",
+      "supplied_by": "repo owner (uploaded package)",
+      "coverage": "2026-08-05 to 2026-11-20, 72 daily rows",
+      "encoding": "UTF-8 with BOM",
+      "modified": false
+    },
+    "valuation/historyofmarket_forward_pe.json": {
+      "original_source": "History of Market API, file updated 2026-11-21",
+      "urls": [
+        "https://historyofmarket.com/api/ndx/forward-pe.json"
+      ],
+      "license": "CC BY 4.0 (attribution: History of Market, historyofmarket.com)",
+      "fetched": "2026-11-22",
+      "supplied_by": "repo owner (uploaded package)",
+      "note": "its 'trailing' array (2026 only, Σ(w·P)/Σ(w·EPS)) is kept but not used",
       "modified": false
     }
   }
