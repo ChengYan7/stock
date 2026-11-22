@@ -11,7 +11,7 @@
   /* layout: one reading column (about 36em) with full-width figures; calculator first, then the fit chart with its two tables, then context */
   --bg:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --band:rgba(11,11,11,.045);
-  --index:#2a78d6; --fit:#eb6834;
+  --index:#2a78d6; --fit:#eb6834; --pe:#1baf7a;
   --font-body:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",sans-serif;
   --font-display:var(--font-body);
 }
@@ -20,14 +20,14 @@
     color-scheme:dark;
     --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
     --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --band:rgba(255,255,255,.055);
-    --index:#3987e5; --fit:#d95926;
+    --index:#3987e5; --fit:#d95926; --pe:#199e70;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --band:rgba(255,255,255,.055);
-  --index:#3987e5; --fit:#d95926;
+  --index:#3987e5; --fit:#d95926; --pe:#199e70;
 }
 [data-lang="zh"] [data-l="en"],[data-lang="en"] [data-l="zh"]{display:none!important}
 *{box-sizing:border-box}
@@ -68,6 +68,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,.chart-wrap:focus-visib
 .legend>span{display:inline-flex;align-items:center;gap:6px}
 .key{display:inline-block;width:18px;height:0;border-top:2px solid var(--index);border-radius:2px}
 .key.fit{border-top-color:var(--fit)}
+.key.pe{border-top-color:var(--pe)}
 .key.fall{width:9px;height:9px;border:2px solid var(--surface);border-radius:50%;background:var(--ink);box-shadow:0 0 0 1px var(--axis)}
 .chart-wrap{position:relative;display:flex;flex-direction:column;gap:14px;border-radius:6px}
 .chart{width:100%;min-width:0}
@@ -84,6 +85,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,.chart-wrap:focus-visib
 .l-index{fill:none;stroke:var(--index);stroke-width:1.25;stroke-linejoin:round;stroke-linecap:round}
 .l-fit{fill:none;stroke:var(--fit);stroke-width:2.25;stroke-linejoin:round;stroke-linecap:round}
 .l-zero{stroke:var(--fit);stroke-width:2;stroke-linecap:round}
+.l-pe{fill:none;stroke:var(--pe);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.dot.pe{fill:var(--pe)}
+.dot.pe.open{fill:var(--surface);stroke:var(--pe);stroke-width:2}
+.t-gap{fill:var(--muted);font-size:11px}
 .a-dev{fill:var(--index);fill-opacity:.10;stroke:none}
 .dot{fill:var(--index);stroke:var(--surface);stroke-width:2}
 .dot.fit{fill:var(--fit)}
@@ -222,6 +227,11 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
         <p class="card-sub"><span data-l="zh">只在五个上涨阶段内计算。橙色横线是趋势线本身，蓝线在上方表示指数高于趋势线。</span><span data-l="en">Computed inside the five rising stages only. The orange horizontal line is the trend itself. Blue above it means the index is above trend.</span></p>
       </div>
       <div class="chart" id="chart-dev"></div>
+      <div>
+        <h3><span data-l="zh">滚动市盈率</span><span data-l="en">Trailing P/E</span></h3>
+        <p class="card-sub"><span data-l="zh">对数坐标。指数成分股的总市值除以它们过去 12 个月的盈利合计。实心点来自 Siblis Research，空心点是 Nasdaq 指数研究公布的 1999、2000 年末数值。其他年份没有找到可公开获取的数据；泡沫破灭后盈利崩塌，市盈率一度到几百倍。</span><span data-l="en">Log scale. The constituents' total market value divided by their combined earnings over the past 12 months. Filled dots are from Siblis Research; open dots are the 1999 and 2000 year-end values published by Nasdaq's index research team. No public data was found for other years; after the dot-com bust, earnings collapsed and the P/E ran into the hundreds.</span></p>
+      </div>
+      <div class="chart" id="chart-pe"></div>
       <div class="tip" id="tip" role="status"></div>
     </div>
   </div>
@@ -302,7 +312,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <li>世界人口：World Bank SP.POP.TOTL，取自 <a href="https://github.com/datasets/population">datasets/population</a>。</li>
     <li>上网人口比例：World Bank IT.NET.USER.ZS（<a href="https://www.indexmundi.com/facts/world/internet-penetration">1990–2020 年序列</a>）；2025 年为 <a href="https://www.itu.int/en/mediacentre/Pages/PR-2025-11-17-Facts-and-Figures.aspx">ITU Facts and Figures 2025</a> 的 60 亿人、74%。</li>
     <li>成分股收入和盈利增速：Nasdaq 指数研究 <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a> 与 <a href="https://indexes.nasdaqomx.com/docs/Nasdaq-100_A%20Tale%20of%20Three%20Crises%20over%20Two%20Decades.pdf">A Tale of Three Crises over Two Decades</a>。</li>
-    <li>市盈率：Nasdaq Index Research，<a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a>（2025 年 11 月）。</li>
+    <li>市盈率：1999 和 2000 年末来自 Nasdaq Index Research，<a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a>（2025 年 11 月）；2016 年以后来自 Siblis Research，<a href="https://siblisresearch.com/data/nasdaq-100-pe-ratio/">NASDAQ 100 P/E Ratio</a> 的年末表和免费 API（2026 年 11 月读取）。</li>
     <li>ChatGPT 用户数：TechCrunch，<a href="https://techcrunch.com/2026/02/27/chatgpt-reaches-900m-weekly-active-users">ChatGPT reaches 900M weekly active users</a>（2026 年 2 月）。</li>
     <li>四家公司的资本开支：The Motley Fool，<a href="https://www.fool.com/research/ai-companies-spending-on-data-centers/">AI hyperscaler capital expenditures over time</a>；Yahoo Finance，<a href="https://finance.yahoo.com/sectors/technology/article/meta-microsoft-amazon-and-alphabet-are-about-to-spend-a-shocking-amount-of-money-to-dominate-the-ai-era-115359575.html">2026 年资本开支计划</a>。</li>
     <li>年龄结构：Geanakoplos, Magill, Quinzii，<a href="https://www.brookings.edu/wp-content/uploads/2004/01/2004a_bpea_geanakoplos.pdf">Demography and the Long-Run Predictability of the Stock Market</a>（Brookings Papers, 2004）。</li>
@@ -312,7 +322,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <li>World population: World Bank SP.POP.TOTL, via <a href="https://github.com/datasets/population">datasets/population</a>.</li>
     <li>Share of people online: World Bank IT.NET.USER.ZS (<a href="https://www.indexmundi.com/facts/world/internet-penetration">1990–2020 series</a>); 2025 is the 6 billion people, 74%, from <a href="https://www.itu.int/en/mediacentre/Pages/PR-2025-11-17-Facts-and-Figures.aspx">ITU Facts and Figures 2025</a>.</li>
     <li>Constituent revenue and earnings growth: Nasdaq index research, <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a> and <a href="https://indexes.nasdaqomx.com/docs/Nasdaq-100_A%20Tale%20of%20Three%20Crises%20over%20Two%20Decades.pdf">A Tale of Three Crises over Two Decades</a>.</li>
-    <li>P/E: Nasdaq Index Research, <a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a> (November 2025).</li>
+    <li>P/E: 1999 and 2000 year-ends from Nasdaq Index Research, <a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a> (November 2025); 2016 onward from Siblis Research, <a href="https://siblisresearch.com/data/nasdaq-100-pe-ratio/">NASDAQ 100 P/E Ratio</a>, year-end table and free API (read November 2026).</li>
     <li>ChatGPT users: TechCrunch, <a href="https://techcrunch.com/2026/02/27/chatgpt-reaches-900m-weekly-active-users">ChatGPT reaches 900M weekly active users</a> (February 2026).</li>
     <li>Capital spending at the four companies: The Motley Fool, <a href="https://www.fool.com/research/ai-companies-spending-on-data-centers/">AI hyperscaler capital expenditures over time</a>; Yahoo Finance, <a href="https://finance.yahoo.com/sectors/technology/article/meta-microsoft-amazon-and-alphabet-are-about-to-spend-a-shocking-amount-of-money-to-dominate-the-ai-era-115359575.html">2026 capital spending plans</a>.</li>
     <li>Age structure: Geanakoplos, Magill, Quinzii, <a href="https://www.brookings.edu/wp-content/uploads/2004/01/2004a_bpea_geanakoplos.pdf">Demography and the Long-Run Predictability of the Stock Market</a> (Brookings Papers, 2004).</li>
@@ -337,9 +347,12 @@ var MILESTONES = [
   ["1986-03-13","微软上市","Microsoft IPO",2],["1991-08-06","万维网公开","Web goes public",3],["1995-08-09","网景上市","Netscape IPO",1],["2000-03-27","泡沫见顶","Dot-com peak",1],
   ["2004-08-19","Google 上市","Google IPO",2],["2007-06-29","iPhone 发售","iPhone launch",1],["2008-09-15","雷曼破产","Lehman fails",2],["2020-03-11","新冠大流行","COVID pandemic",2],["2022-11-30","ChatGPT 发布","ChatGPT launch",1]
 ];
+// trailing P/E, from data/raw/valuation/ndx_pe_trailing.csv on the main branch: [date, P/E, source] with source 1 = Siblis Research, 0 = Nasdaq index research
+var PE = [["1999-12-31",104,0],["2000-12-29",113,0],["2016-12-30",23.08,1],["2017-12-29",25.84,1],["2018-12-31",20.75,1],["2019-12-31",26.47,1],["2020-12-31",39.72,1],["2021-12-31",38,1],["2022-12-30",23.72,1],["2023-12-29",30.25,1],["2024-06-28",31.82,1],["2024-12-31",32.36,1],["2025-03-31",28.73,1],["2025-06-30",32.24,1],["2025-09-30",32.98,1],["2025-12-31",32.32,1],["2026-06-30",35.24,1],["2026-09-30",35.09,1],["2026-10-30",32.76,1]].map(function(r){ return { d: dayOf(r[0]), v: r[1], s: r[2] }; });
+var PE_GAP = 400;   // points further apart than this many days are not joined by a line
 var STR = {
   zh: {
-    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaCalc: "阶段 ⑤ 的趋势线及其延长线，标出所选日期的点位",
+    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaPE: "Nasdaq-100 滚动市盈率，对数坐标", tipPE: "市盈率", peNoData: ["暂无公开数据", "无数据"], ariaCalc: "阶段 ⑤ 的趋势线及其延长线，标出所选日期的点位",
     perYr: "/年", stage: "阶段", unfitted: "下跌区间，未拟合", tipIndex: "指数", tipTrend: "趋势线", tipDev: "偏离", tipHigh: "距前高", atHigh: "新高",
     kFut: "预测点位", kPast: "当日收盘",
     subFut: function(d, num, rate){ return d + " · 阶段 " + num + " 延长线，每年 " + rate; },
@@ -357,7 +370,7 @@ var STR = {
     meta: function(a, b, n, c0, c1){ return "日收盘 " + a + " 至 " + b + " · " + n + " 个交易日 · " + c0 + " → " + c1 + " 点"; }
   },
   en: {
-    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaCalc: "Stage 5 trend line and its extension, with the selected date marked",
+    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaPE: "Nasdaq-100 trailing P/E, log scale", tipPE: "P/E", peNoData: ["No public data", "No data"], ariaCalc: "Stage 5 trend line and its extension, with the selected date marked",
     perYr: "/yr", stage: "Stage", unfitted: "Fall, not fitted", tipIndex: "Index", tipTrend: "Trend", tipDev: "Deviation", tipHigh: "From prior high", atHigh: "New high",
     kFut: "Projected level", kPast: "Close that day",
     subFut: function(d, num, rate){ return d + " · stage " + num + " extended, " + rate + " a year"; },
@@ -555,6 +568,62 @@ function drawDev(){
   G.dev = g;
 }
 
+function peAt(d){   // the P/E point nearest to day d, if one is within a month
+  var best = null, k;
+  for (k = 0; k < PE.length; k++) if (Math.abs(PE[k].d - d) <= 31 && (!best || Math.abs(PE[k].d - d) < Math.abs(best.d - d))) best = PE[k];
+  return best;
+}
+function drawPE(){
+  var box = $("chart-pe"), W = Math.max(280, box.clientWidth), narrow = W < 560;
+  var g = { W: W, l: 40, t: 10, pw: W - 40 - 14, ph: narrow ? 130 : 170 };
+  g.x = function(d){ return g.l + (d - D0) / (D1 - D0) * g.pw; };
+  var mn = Infinity, mx = 0;
+  PE.forEach(function(p){ if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
+  var lo = Math.log(mn / 1.35), hi = Math.log(mx * 1.3);
+  g.y = function(v){ return g.t + (hi - Math.log(v)) / (hi - lo) * g.ph; };
+  var H = g.t + g.ph + 24;
+  box.textContent = "";
+  var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaPE") }, box);
+  var ticks = [10, 15, 20, 30, 50, 100, 200, 500].filter(function(v){ var l = Math.log(v); return l > lo + 0.05 && l < hi - 0.02; });
+  drawFrame(svg, g, ticks, function(v){ return v + "×"; });
+
+  // stretches without data get a quiet label; points from one source closer than PE_GAP days form a line
+  var spans = [[D0, PE[0].d]], runs = [], cur = null, k;
+  for (k = 0; k < PE.length; k++) {
+    if (k && PE[k].d - PE[k - 1].d > PE_GAP) spans.push([PE[k - 1].d, PE[k].d]);
+    if (!k || PE[k].s !== PE[k - 1].s || PE[k].d - PE[k - 1].d > PE_GAP) { cur = []; runs.push(cur); }
+    cur.push(PE[k]);
+  }
+  if (D1 - PE[PE.length - 1].d > PE_GAP) spans.push([PE[PE.length - 1].d, D1]);
+  spans.forEach(function(sp){
+    var a = g.x(sp[0]), b = g.x(sp[1]), label = L("peNoData").filter(function(t){ return b - a > textW(t, 11) + 24; })[0];
+    if (label) el("text", { x: (a + b) / 2, y: g.t + g.ph / 2 + 4, "text-anchor": "middle", "class": "t-gap" }, svg, label);
+  });
+  runs.forEach(function(r){
+    if (r.length < 2) return;
+    el("path", { d: r.map(function(p, q){ return (q ? "L" : "M") + g.x(p.d).toFixed(1) + "," + g.y(p.v).toFixed(1); }).join(""), "class": "l-pe" }, svg);
+  });
+  // dots: always at both ends of each run (they carry the source: filled or open), inside a run only where there is room
+  runs.forEach(function(r){
+    r.forEach(function(p, q){
+      var x = g.x(p.d), gap = Math.min(q ? x - g.x(r[q - 1].d) : 99, q < r.length - 1 ? g.x(r[q + 1].d) - x : 99), rad = Math.min(4, gap / 2 - 0.5);
+      if (q === 0 || q === r.length - 1) rad = Math.max(3, rad);
+      if (rad >= 3) el("circle", { cx: x, cy: g.y(p.v), r: rad, "class": p.s ? "dot pe" : "dot pe open" }, svg);
+    });
+  });
+
+  // direct labels: the highest point and the latest one
+  var top = PE.reduce(function(a, p){ return p.v > a.v ? p : a; }, PE[0]), last = PE[PE.length - 1], lx = g.x(last.d), ly = g.y(last.v);
+  el("text", { x: g.x(top.d), y: g.y(top.v) - 9, "text-anchor": "middle", "class": "t-end" }, svg, Math.round(top.v) + "×");
+  PE.forEach(function(p){ if (lx - g.x(p.d) <= 64 && g.y(p.v) < ly) ly = g.y(p.v); });
+  el("text", { x: lx, y: Math.max(g.t + 10, ly - 9), "text-anchor": "end", "class": "t-end" }, svg, last.v.toFixed(1) + "×");
+
+  g.cross = el("line", { x1: 0, x2: 0, y1: g.t, y2: g.t + g.ph, "class": "cross" }, svg);
+  g.hdot = el("circle", { r: 4, "class": "dot pe", visibility: "hidden" }, svg);
+  g.hit = el("rect", { x: g.l, y: g.t, width: g.pw, height: g.ph, fill: "transparent" }, svg);
+  G.pe = g;
+}
+
 function tipRow(parent, keyCls, name, value){
   var r = h("div", "r", parent), n = h("span", "n", r);
   h("i", keyCls === null ? "nokey" : "key " + keyCls, n); n.appendChild(document.createTextNode(name));
@@ -562,28 +631,32 @@ function tipRow(parent, keyCls, name, value){
 }
 function show(e, on){ e.setAttribute("visibility", on ? "visible" : "hidden"); e.style.visibility = on ? "visible" : "hidden"; }
 function setHover(idx, anchor){
-  var tip = $("tip"), m = G.main, v = G.dev, wrap = $("wrap"), inStage;
+  var tip = $("tip"), m = G.main, v = G.dev, pg = G.pe, wrap = $("wrap"), inStage, pq;
   state.hover = idx;
-  if (idx < 0) { [m.cross, m.hdot, m.fdot, v.cross, v.hdot].forEach(function(e){ show(e, false); }); tip.style.visibility = "hidden"; return; }
+  if (idx < 0) { [m.cross, m.hdot, m.fdot, v.cross, v.hdot, pg.cross, pg.hdot].forEach(function(e){ show(e, false); }); tip.style.visibility = "hidden"; return; }
   inStage = stg[idx] >= 0;
   var X = m.x(days[idx]);
-  [m.cross, v.cross].forEach(function(e){ e.setAttribute("x1", X); e.setAttribute("x2", X); show(e, true); });
+  [m.cross, v.cross, pg.cross].forEach(function(e){ e.setAttribute("x1", X); e.setAttribute("x2", X); show(e, true); });
   m.hdot.setAttribute("cx", X); m.hdot.setAttribute("cy", m.yl(lnc[idx])); show(m.hdot, true);
   if (inStage) { m.fdot.setAttribute("cx", X); m.fdot.setAttribute("cy", m.yl(fitv[idx])); v.hdot.setAttribute("cx", X); v.hdot.setAttribute("cy", v.y(dev[idx])); }
   show(m.fdot, inStage); show(v.hdot, inStage);
+  pq = peAt(days[idx]);
+  if (pq) { pg.hdot.setAttribute("cx", pg.x(pq.d)); pg.hdot.setAttribute("cy", pg.y(pq.v)); pg.hdot.setAttribute("class", pq.s ? "dot pe" : "dot pe open"); }
+  show(pg.hdot, !!pq);
   tip.textContent = "";
   h("div", "d", tip, iso(days[idx]) + " · " + (inStage ? L("stage") + " " + NUM[stg[idx]] : L("unfitted")));
   tipRow(tip, "", L("tipIndex"), fmtLvl(DATA.c[idx]));
   if (inStage) { tipRow(tip, "fit", L("tipTrend"), fmtLvl(Math.exp(fitv[idx]))); tipRow(tip, null, L("tipDev"), fmtPct(Math.exp(dev[idx]) - 1, 1)); }
   tipRow(tip, null, L("tipHigh"), fromHigh[idx] === 0 ? L("atHigh") : fmtPct(fromHigh[idx], 1));
-  var wr = wrap.getBoundingClientRect(), host = (anchor === "dev" ? $("chart-dev") : $("chart-main")).getBoundingClientRect();
+  if (pq) tipRow(tip, "pe", L("tipPE") + (pq.d !== days[idx] ? " · " + iso(pq.d) : ""), pq.v.toFixed(1) + "×");
+  var wr = wrap.getBoundingClientRect(), host = $(anchor === "dev" ? "chart-dev" : anchor === "pe" ? "chart-pe" : "chart-main").getBoundingClientRect();
   var tw = tip.offsetWidth, left = X + 14;
   if (left + tw > wr.width - 2) left = X - 14 - tw;
   if (left < 2) left = 2;
-  tip.style.left = left + "px"; tip.style.top = (host.top - wr.top + (anchor === "dev" ? 4 : 30)) + "px"; tip.style.visibility = "visible";
+  tip.style.left = left + "px"; tip.style.top = (host.top - wr.top + (anchor === "main" ? 30 : 4)) + "px"; tip.style.visibility = "visible";
 }
 function bindHover(){
-  [["main", G.main], ["dev", G.dev]].forEach(function(p){
+  [["main", G.main], ["dev", G.dev], ["pe", G.pe]].forEach(function(p){
     var g = p[1], name = p[0];
     function move(ev){ var r = g.hit.getBoundingClientRect(), frac = (ev.clientX - r.left) / r.width; setHover(nearest(D0 + Math.min(1, Math.max(0, frac)) * (D1 - D0)), name); }
     g.hit.addEventListener("pointermove", move); g.hit.addEventListener("pointerdown", move);
@@ -774,7 +847,7 @@ function syncLang(){
   $("wrap").setAttribute("aria-label", L("ariaWrap"));
   $("meta-line").textContent = L("meta")(iso(D0), iso(D1), fmtInt(N), DATA.c[0], fmtInt(DATA.c[N - 1]));
 }
-function render(){ syncLang(); drawMain(); drawDev(); bindHover(); drawStageTable(); drawFallTable(); drawAnnual(); state.hover = -1; $("tip").style.visibility = "hidden"; }
+function render(){ syncLang(); drawMain(); drawDev(); drawPE(); bindHover(); drawStageTable(); drawFallTable(); drawAnnual(); state.hover = -1; $("tip").style.visibility = "hidden"; }
 function setLang(l, fromHash){
   if (l !== "en" && l !== "zh") return;
   LANG = l;
