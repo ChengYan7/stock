@@ -1,0 +1,20 @@
+date,pe,source,basis
+1999-12-31,104,nasdaq_research,"imputed from aggregate index earnings and market caps (Nasdaq Index Research, Nov 2025)"
+2000-12-29,113,nasdaq_research,"FactSet trailing P/E, earliest index-level value (Nasdaq Index Research, Nov 2025)"
+2016-12-30,23.08,siblis,year-end table
+2017-12-29,25.84,siblis,year-end table
+2018-12-31,20.75,siblis,year-end table
+2019-12-31,26.47,siblis,year-end table
+2020-12-31,39.72,siblis,year-end table
+2021-12-31,38.00,siblis,year-end table
+2022-12-30,23.72,siblis,year-end table
+2023-12-29,30.25,siblis,year-end table; free API
+2024-06-28,31.82,siblis,free API
+2024-12-31,32.36,siblis,year-end table; free API
+2025-03-31,28.73,siblis,free API
+2025-06-30,32.24,siblis,free API
+2025-09-30,32.98,siblis,free API
+2025-12-31,32.32,siblis,year-end table; free API
+2026-06-30,35.24,siblis,free API
+2026-09-30,35.09,siblis,free API
+2026-10-30,32.76,siblis,month-end table (Oct 2026)

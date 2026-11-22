@@ -70,6 +70,19 @@
         "NVDA",
         "TSLA"
       ]
+    },
+    "valuation/ndx_pe_trailing.csv": {
+      "original_source": "Siblis Research (2016-12 onward) and Nasdaq Index Research (1999-12, 2000-12)",
+      "urls": [
+        "https://siblisresearch.com/data/nasdaq-100-pe-ratio/",
+        "https://siblisresearch.com/api/v1/NDX/pe-trailing",
+        "https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100"
+      ],
+      "fetched": "2026-11-22",
+      "method": "transcribed by hand from the public page, the free API response and the Nasdaq article; no file download was available",
+      "definition": "trailing P/E = aggregate constituent market cap / aggregate trailing 12-month earnings (Siblis: normalised net income, one-offs removed)",
+      "coverage": "sparse: 2 points for 1999-2000, then year-ends 2016-2025 and selected month-ends to 2026-10. No free continuous series was found; 2001-2015 and pre-1999 are missing",
+      "modified": false
     }
   }
 }
