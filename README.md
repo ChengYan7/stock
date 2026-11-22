@@ -18,6 +18,8 @@ data/
       nasdaq100_constituents.csv            The current 101 constituents (checked 2026-11-15)
       yahoo_adjusted_ohlcv_2y/<TICKER>.csv  All 101, adjusted daily bars for the last 2 years (2024-11-20 → 2026-11-19)
       pubmarks_ohlcv_full_history/<T>.csv   Full daily history since listing, for 10 of them (→ 2026-11-18)
+    valuation/
+      ndx_pe_trailing.csv                   Nasdaq-100 trailing P/E, 19 points: 1999, 2000, then 2016-12 → 2026-10 (sparse)
   processed/
     ndx_daily.csv                           Merged ^NDX daily series, 1985-10-01 → 2026-11-18, 10,364 rows
 scripts/
@@ -37,6 +39,7 @@ The environment used for the first pass could only reach GitHub, not Yahoo Finan
 | `constituents/nasdaq100_constituents.csv` | Gary-Strauss/NASDAQ100_Constituents | Wikipedia | Unchanged |
 | `constituents/yahoo_adjusted_ohlcv_2y/` | sungholee0221-ops/us-market-data (`data` branch) | Yahoo Finance | Kept only the Nasdaq-100 constituents, split into one CSV per ticker |
 | `constituents/pubmarks_ohlcv_full_history/` | Pubmarks/datasets | See upstream notes | Yearly files joined into one CSV per ticker |
+| `valuation/ndx_pe_trailing.csv` | (not from GitHub) | [Siblis Research](https://siblisresearch.com/data/nasdaq-100-pe-ratio/) public table and free API; [Nasdaq Index Research](https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100) for 1999 and 2000 | Typed in by hand from those pages, 2026-11-22 |
 
 ## Checks done (index)
 
@@ -53,6 +56,7 @@ The environment used for the first pass could only reach GitHub, not Yahoo Finan
 - **Constituents**: only 10 have full history (AAPL, ADBE, GOOG, INTU, LRCX, META, MSFT, NFLX, NVDA, TSLA); the other 91 currently cover only the last 2 years. To fill this in, run `python scripts/download_yahoo_full.py` on a computer with normal internet access (the script has not yet been tested in an actual run).
 - The constituent list is the **current** list, so companies removed from the index in the past are missing (survivorship bias).
 - **SNDK**: on 2026-11-19 the upstream snapshot returned only 5 rows for SNDK (from 2026-11-13). `fetch_raw.py` now keeps a ticker's earlier rows from the previous fetch when upstream history is cut short (only rows inside upstream's 2-year window); for SNDK that is 2025-02-13 → 2026-11-11. 2026-11-12 is missing. Details are in `manifest.json` under `backfilled_from_previous_fetch`.
+- **P/E**: no free, continuous Nasdaq-100 P/E history was found. `valuation/ndx_pe_trailing.csv` has only 19 points (1999, 2000, year-ends 2016–2025 and a few 2024–2026 month-ends). Siblis's full daily history is paid. Trendonify shows a monthly series from 1990 on its page, but its CSV download only covers recent years, and it appears to use as-reported earnings (Dec 2021: 31.1 vs Siblis 38.0; Dec 2023: 34.6 vs 30.3). Different providers compute index P/E differently (GuruFocus, for example, is several points lower than Siblis in 2026), so don't mix sources in one line. For 2001–2005, earnings collapsed and trailing P/E ran into the hundreds.
 - The two sets of constituent prices are adjusted differently: `yahoo_adjusted_ohlcv_2y` is adjusted for both splits and dividends, while `pubmarks_ohlcv_full_history` follows its upstream documentation. Do not splice them together directly.
 
 ## Rebuilding
