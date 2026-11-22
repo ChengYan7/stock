@@ -11,7 +11,7 @@
   /* layout: one reading column (about 36em) with full-width figures; calculator first, then the fit chart with its two tables, then context */
   --bg:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --band:rgba(11,11,11,.045);
-  --index:#2a78d6; --fit:#eb6834; --pe:#1baf7a;
+  --index:#2a78d6; --fit:#eb6834; --pe:#1baf7a; --fy:#eda100; --fwd:#6250d6;
   --font-body:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",sans-serif;
   --font-display:var(--font-body);
 }
@@ -20,14 +20,14 @@
     color-scheme:dark;
     --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
     --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --band:rgba(255,255,255,.055);
-    --index:#3987e5; --fit:#d95926; --pe:#199e70;
+    --index:#3987e5; --fit:#d95926; --pe:#199e70; --fy:#c98500; --fwd:#9085e9;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --band:rgba(255,255,255,.055);
-  --index:#3987e5; --fit:#d95926; --pe:#199e70;
+  --index:#3987e5; --fit:#d95926; --pe:#199e70; --fy:#c98500; --fwd:#9085e9;
 }
 [data-lang="zh"] [data-l="en"],[data-lang="en"] [data-l="zh"]{display:none!important}
 *{box-sizing:border-box}
@@ -69,6 +69,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,.chart-wrap:focus-visib
 .key{display:inline-block;width:18px;height:0;border-top:2px solid var(--index);border-radius:2px}
 .key.fit{border-top-color:var(--fit)}
 .key.pe{border-top-color:var(--pe)}
+.key.fy{border-top-color:var(--fy)}
+.key.fwd{border-top-color:var(--fwd)}
 .key.fall{width:9px;height:9px;border:2px solid var(--surface);border-radius:50%;background:var(--ink);box-shadow:0 0 0 1px var(--axis)}
 .chart-wrap{position:relative;display:flex;flex-direction:column;gap:14px;border-radius:6px}
 .chart{width:100%;min-width:0}
@@ -85,6 +87,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,.chart-wrap:focus-visib
 .l-index{fill:none;stroke:var(--index);stroke-width:1.25;stroke-linejoin:round;stroke-linecap:round}
 .l-fit{fill:none;stroke:var(--fit);stroke-width:2.25;stroke-linejoin:round;stroke-linecap:round}
 .l-zero{stroke:var(--fit);stroke-width:2;stroke-linecap:round}
+.l-fy{fill:none;stroke:var(--fy);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.dot.fy{fill:var(--fy)}
+.l-fwd{fill:none;stroke:var(--fwd);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.dot.fwd{fill:var(--fwd)}
 .l-pe{fill:none;stroke:var(--pe);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .dot.pe{fill:var(--pe)}
 .dot.pe.open{fill:var(--surface);stroke:var(--pe);stroke-width:2}
@@ -110,8 +116,10 @@ th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px soli
 tr:last-child td{border-bottom:0}
 th{font-weight:600;color:var(--ink-2);font-size:13px;white-space:nowrap;background:var(--surface)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#oos-table th{white-space:normal;vertical-align:bottom}
+#oos-table td:first-child{min-width:6.5em}
 td.nw{white-space:nowrap;font-variant-numeric:tabular-nums}
-td.strong{font-weight:650}
+td.strong,tr.strong td{font-weight:650}
 td .sub{display:block;color:var(--muted);font-size:12px;font-weight:400}
 tr.fall td{background:var(--band)}
 #stage-table th,#stage-table td{padding-left:10px;padding-right:10px}
@@ -135,15 +143,19 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 .calc-out .w{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .crows{display:flex;flex-direction:column}
 .crow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--grid);font-size:14px}
-.crow .ck{color:var(--ink-2)}
+.crow .ck{color:var(--ink-2);white-space:nowrap}
 .crow .cv{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.crow .cs{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.crow .cs{display:block;font-weight:400;font-size:12px;color:var(--muted);white-space:normal}
 .calc-main{display:flex;flex-direction:column;gap:6px;min-width:0}
 .key.buy{border-top-color:var(--ink);border-top-width:1.5px}
 .l-buy{stroke:var(--ink);stroke-width:1.5}
 .h-buy{stroke:transparent;stroke-width:14;cursor:ns-resize;touch-action:none}
 .key.ext{border-top:0;width:22px;height:2px;background:repeating-linear-gradient(90deg,var(--fit) 0 5px,transparent 5px 9px)}
 .swatch{display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--fit);opacity:.22}
+.swatch.fan{background:var(--index);opacity:.2}
+.key.scen{border-top:0;width:22px;height:2px;background:repeating-linear-gradient(90deg,var(--index) 0 5px,transparent 5px 9px)}
+.l-scen{fill:none;stroke:var(--index);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
+.a-fan{fill:var(--index);fill-opacity:.12;stroke:none}
 .l-fit-ext{fill:none;stroke:var(--fit);stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
 .a-band{fill:var(--fit);fill-opacity:.13;stroke:none}
 .sel-line{stroke:var(--ink-2);stroke-width:1}
@@ -170,7 +182,8 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
 </header>
 
 <section id="calc">
-  <h2><span data-l="zh">现阶段斜率外推</span><span data-l="en">Extrapolating the current slope</span></h2>
+  <h2><span data-l="zh">固定斜率情景</span><span data-l="en">Fixed-slope scenario</span></h2>
+  <p class="note" id="calc-intro"></p>
   <div class="calc">
     <div class="calc-side">
       <div class="calc-pick">
@@ -193,15 +206,22 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
       <div class="legend">
         <span><i class="key"></i><span data-l="zh">日收盘</span><span data-l="en">Daily close</span></span>
         <span><i class="key fit"></i><span data-l="zh">阶段 ⑤ 趋势线</span><span data-l="en">Stage ⑤ trend line</span></span>
-        <span><i class="key ext"></i><span data-l="zh">延长线</span><span data-l="en">Extension</span></span>
+        <span><i class="key ext"></i><span data-l="zh">趋势线延长（拟合趋势水平）</span><span data-l="en">Trend line extended (fitted level)</span></span>
+        <span><i class="key scen"></i><span data-l="zh">从最新收盘延续斜率（情景）</span><span data-l="en">Slope continued from the latest close (scenario)</span></span>
         <span><i class="key buy"></i><span data-l="zh">买入点位</span><span data-l="en">Entry level</span></span>
-        <span><i class="swatch"></i><span data-l="zh">常见范围 ±1σ</span><span data-l="en">Typical range ±1σ</span></span>
+        <span><i class="swatch"></i><span data-l="zh">历史样本内残差带 ±1σ</span><span data-l="en">In-sample residual band ±1σ</span></span>
+        <span><i class="swatch fan"></i><span data-l="zh">回测误差 80% 区间</span><span data-l="en">Backtest error, 80% range</span></span>
       </div>
       <div class="scale-ctl"><span class="k" aria-hidden="true"><span data-l="zh">纵轴</span><span data-l="en">Y axis</span></span><div class="seg sm" id="calc-scale" role="group"><button type="button" data-scale="log" aria-pressed="true"><span data-l="zh">对数</span><span data-l="en">Log</span></button><button type="button" data-scale="lin" aria-pressed="false"><span data-l="zh">线性</span><span data-l="en">Linear</span></button></div></div>
       </div>
       <p class="card-sub" id="calc-scale-note"></p>
       <div class="chart" id="calc-chart"></div>
     </div>
+  </div>
+  <div class="stack">
+    <h3><span data-l="zh">这种外推过去准不准：滚动样本外检验</span><span data-l="en">How well has this kind of extrapolation worked? A rolling out-of-sample test</span></h3>
+    <div class="table-scroll"><table id="oos-table"></table></div>
+    <p class="note"><span data-l="zh">做法固定，不挑阶段：从 1985 年起的每个月末，只用当时以前的收盘拟合一条直线，按它的斜率从当天收盘往后延续，1 年后和实际收盘比较。牛市和熊市都在样本里。误差是实际值除以外推值减 1。最后一列：如果 ±1σ 带真能当预测区间，大约 68% 的结果应落在带内。每行有 361 到 445 个月度预测，预测期互相重叠，独立样本大约只有 37 年。上图的 80% 区间用的是「过去 4 年」这一行在各个期限上的误差，因为阶段 ⑤ 正好约 4 年长。</span><span data-l="en">One fixed rule, no stages picked after the fact: at every month-end since 1985, fit a straight line to the closes up to that day only, continue its slope from that day's close, and compare with the actual close one year later. Bull and bear markets are both in the sample. Error is actual divided by extrapolated, minus 1. Last column: if the ±1σ band worked as a forecast range, about 68% of outcomes would land inside it. Each row has 361 to 445 monthly forecasts whose periods overlap, so there are only about 37 independent years. The 80% range on the chart above uses the "past 4 years" row at each horizon, since stage ⑤ is about 4 years long.</span></p>
   </div>
 </section>
 
@@ -219,7 +239,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
             <span><i class="key fall"></i><span data-l="zh">最大跌幅（前高 → 低点）</span><span data-l="en">Maximum fall (prior high → low)</span></span>
           </div>
         </div>
-        <p class="card-sub"><span data-l="zh">对数坐标。每个阶段上方是该段直线的年化斜率，低点旁边的百分比是最大跌幅。</span><span data-l="en">Log scale. Above each stage is its line's annual slope. The percentage beside each low is the maximum fall.</span></p>
+        <p class="card-sub"><span data-l="zh">对数坐标。每个阶段上方是该段直线的年化斜率，低点旁边的百分比是最大跌幅。阶段是事后按上涨区间划分的，熊市另列，不参与拟合。</span><span data-l="en">Log scale. Above each stage is its line's annual slope. The percentage beside each low is the maximum fall. Stages were drawn after the fact around the rises; bear markets are listed separately and not fitted.</span></p>
       </div>
       <div class="chart" id="chart-main"></div>
       <div>
@@ -228,8 +248,15 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
       </div>
       <div class="chart" id="chart-dev"></div>
       <div>
-        <h3><span data-l="zh">滚动市盈率</span><span data-l="en">Trailing P/E</span></h3>
-        <p class="card-sub"><span data-l="zh">对数坐标。指数成分股的总市值除以它们过去 12 个月的盈利合计。实心点来自 Siblis Research，空心点是 Nasdaq 指数研究公布的 1999、2000 年末数值。其他年份没有找到可公开获取的数据；泡沫破灭后盈利崩塌，市盈率一度到几百倍。</span><span data-l="en">Log scale. The constituents' total market value divided by their combined earnings over the past 12 months. Filled dots are from Siblis Research; open dots are the 1999 and 2000 year-end values published by Nasdaq's index research team. No public data was found for other years; after the dot-com bust, earnings collapsed and the P/E ran into the hundreds.</span></p>
+        <div class="card-head">
+          <h3><span data-l="zh">市盈率：三种口径</span><span data-l="en">P/E on three bases</span></h3>
+          <div class="legend">
+            <span><i class="key pe"></i><span data-l="zh">滚动市盈率（过去 12 个月盈利）</span><span data-l="en">Trailing P/E (past 12 months' earnings)</span></span>
+            <span><i class="key fy"></i><span data-l="zh">Nasdaq 年度市盈率（图上读数）</span><span data-l="en">Nasdaq annual P/E (read off a chart)</span></span>
+            <span><i class="key fwd"></i><span data-l="zh">预期市盈率（未来 12 个月）</span><span data-l="en">Forward P/E (next 12 months)</span></span>
+          </div>
+        </div>
+        <p class="card-sub"><span data-l="zh">对数坐标。三条线的分母不同，各画各的，不拼接。滚动市盈率是成分股总市值除以过去 12 个月盈利合计：实心点来自 Siblis Research，用的是剔除一次性损益后的盈利；空心点是 Nasdaq 指数研究公布的 1999、2000 年末和 2019-04-30 数值。Nasdaq 年度市盈率是其 2022 年 12 月报告第 18 页图中的 FY P/E，除 2001 年标注的 208.3 倍外都是从图上读出的近似值，画在每年最后一个交易日。预期市盈率来自 History of Market，每周一个值，2005 到 2006 年有断档；它 2026 年 8 月以后换了算法，没有画。</span><span data-l="en">Log scale. The three lines divide by different earnings, so each is drawn on its own and none are joined. Trailing P/E is the constituents' total market value over their combined earnings for the past 12 months: filled dots are from Siblis Research, which removes one-off items from earnings; open dots are values published by Nasdaq's index research for the 1999 and 2000 year-ends and 2019-04-30. Nasdaq's annual P/E is the FY P/E on page 18 of its December 2022 presentation; apart from the printed 208.3 for 2001, the values are read off the chart and approximate, and are placed at each year's last trading day. Forward P/E is from History of Market, one value a week, with a gap in 2005–2006; it switched methods after August 2026, and that part isn't drawn.</span></p>
       </div>
       <div class="chart" id="chart-pe"></div>
       <div class="tip" id="tip" role="status"></div>
@@ -239,7 +266,8 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
   <div class="stack">
     <h3><span data-l="zh">五个上涨阶段</span><span data-l="en">The five rising stages</span></h3>
     <div class="table-scroll"><table id="stage-table"></table></div>
-    <p class="note"><span data-l="zh">残差 σ 是该阶段内 ln(指数) 偏离直线的标准差，0.10 约等于上下 10%。最高和最低偏离是指数相对趋势线的最大正负差距。段内最大回撤是该阶段内部从高点到随后低点的最大跌幅。</span><span data-l="en">Residual σ is the standard deviation of ln(index) around the line within the stage; 0.10 is roughly 10% either way. Max above and max below are the widest gaps of the index above and below the trend. Largest pullback is the biggest fall from a high to a later low inside the stage.</span></p>
+    <p class="note"><span data-l="zh">这五段是看着完整走势事后选出来的上涨区间：每段都从熊市低点附近开始，熊市本身不参与拟合，所以段内斜率天然偏高，也不能说明当时就能认出这些阶段。作为对照，1985-10-01 到 2026-11-18 整体的价格年化增长是 14.3%（不含股息），阶段 ⑤ 是 25.9%。2020 到 2022 年连同中间 137% 的上涨被整体排除。阶段 ⑤ 的起点靠近 ChatGPT 发布，也恰好在加息熊市之后的低位。</span><span data-l="en">These five stages were picked after the fact, looking at the whole history: each starts near a bear-market low, and the bear markets themselves are left out of the fit, so the stage slopes run high by construction and don't show that the stages could have been recognised at the time. For comparison, the index's price grew 14.3% a year from 1985-10-01 to 2026-11-18 (dividends excluded); stage ⑤ is 25.9%. The years 2020 to 2022 are left out entirely, including a 137% rally in between. Stage ⑤ starts near the ChatGPT launch, which was also the low point after the rate-hike bear market.</span></p>
+    <p class="note"><span data-l="zh">残差 σ 是该阶段内 ln(指数) 偏离直线的标准差，0.10 约等于上下 10%。最高和最低偏离是指数相对趋势线的最大正负差距。段内最大回撤是该阶段内部从高点到随后低点的最大跌幅。残差 σ 是样本内的拟合误差，不是未来的波动范围。</span><span data-l="en">Residual σ is the standard deviation of ln(index) around the line within the stage; 0.10 is roughly 10% either way. Max above and max below are the widest gaps of the index above and below the trend. Largest pullback is the biggest fall from a high to a later low inside the stage. Residual σ is in-sample fitting error, not a range for the future.</span></p>
   </div>
 
   <div class="stack">
@@ -303,6 +331,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
         <td class="num">+5%<span class="sub"><span data-l="zh">51.5 → 约 60 亿</span><span data-l="en">5.15 → about 6 bn</span></span></td>
         <td><span data-l="zh">生成式 AI。ChatGPT 在 2022 年 11 月 30 日发布，到 2026 年 2 月周活跃用户约 9 亿。亚马逊、微软、Alphabet 和 Meta 四家的资本开支从 2024 年的 2,240 亿美元升到 2025 年的约 4,100 亿，2026 年计划约 7,250 亿。</span><span data-l="en">Generative AI. ChatGPT launched on 30 November 2022 and had about 900 million weekly users by February 2026. Capital spending at Amazon, Microsoft, Alphabet and Meta rose from $224 billion in 2024 to about $410 billion in 2025, with roughly $725 billion planned for 2026.</span></td></tr>
     </tbody></table></div>
+  <p class="note"><span data-l="zh">科技普及和指数上涨同时发生，不等于前者决定了后者的速度。用户增长和 AI 资本开支说明需求在扩大，但要变成股价回报，得先变成盈利，再乘上市盈率的变化：价格变化 ≈ 盈利变化 × 市盈率变化。利润率、回购与稀释、利率都在其中起作用；资本开支增加本身不保证股东回报增加。估值的走势见上方的市盈率图。</span><span data-l="en">Technology spreading while the index rose doesn't mean the one set the other's pace. User growth and AI capital spending show demand growing, but to become returns they have to turn into earnings and then be multiplied by the change in the P/E: price change ≈ earnings change × P/E change. Margins, buybacks and dilution, and interest rates all play a part, and more capital spending doesn't by itself mean more return to shareholders. The valuation picture is in the P/E chart above.</span></p>
 </section>
 
 <section id="sources">
@@ -312,7 +341,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <li>世界人口：World Bank SP.POP.TOTL，取自 <a href="https://github.com/datasets/population">datasets/population</a>。</li>
     <li>上网人口比例：World Bank IT.NET.USER.ZS（<a href="https://www.indexmundi.com/facts/world/internet-penetration">1990–2020 年序列</a>）；2025 年为 <a href="https://www.itu.int/en/mediacentre/Pages/PR-2025-11-17-Facts-and-Figures.aspx">ITU Facts and Figures 2025</a> 的 60 亿人、74%。</li>
     <li>成分股收入和盈利增速：Nasdaq 指数研究 <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a> 与 <a href="https://indexes.nasdaqomx.com/docs/Nasdaq-100_A%20Tale%20of%20Three%20Crises%20over%20Two%20Decades.pdf">A Tale of Three Crises over Two Decades</a>。</li>
-    <li>市盈率：1999 和 2000 年末来自 Nasdaq Index Research，<a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a>（2025 年 11 月）；2016 年以后来自 Siblis Research，<a href="https://siblisresearch.com/data/nasdaq-100-pe-ratio/">NASDAQ 100 P/E Ratio</a> 的年末表和免费 API（2026 年 11 月读取）。</li>
+    <li>市盈率：1999 和 2000 年末来自 Nasdaq Index Research，<a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a>（2025 年 11 月）；2019-04-30 来自 Nasdaq <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a>；2016 年以后来自 Siblis Research，<a href="https://siblisresearch.com/data/nasdaq-100-pe-ratio/">NASDAQ 100 P/E Ratio</a> 的年末表和免费 API（2026 年 11 月读取）。年度市盈率：Nasdaq，<a href="https://indexes.nasdaq.com/docs/NDX_Extended%20Presentation_December%202022.pdf">NDX Extended Presentation</a>（2022 年 12 月）第 18 页。预期市盈率：<a href="https://historyofmarket.com/nasdaq/ndx-forward-pe/">History of Market</a>，数据按 CC BY 4.0 许可使用。</li>
     <li>ChatGPT 用户数：TechCrunch，<a href="https://techcrunch.com/2026/02/27/chatgpt-reaches-900m-weekly-active-users">ChatGPT reaches 900M weekly active users</a>（2026 年 2 月）。</li>
     <li>四家公司的资本开支：The Motley Fool，<a href="https://www.fool.com/research/ai-companies-spending-on-data-centers/">AI hyperscaler capital expenditures over time</a>；Yahoo Finance，<a href="https://finance.yahoo.com/sectors/technology/article/meta-microsoft-amazon-and-alphabet-are-about-to-spend-a-shocking-amount-of-money-to-dominate-the-ai-era-115359575.html">2026 年资本开支计划</a>。</li>
     <li>年龄结构：Geanakoplos, Magill, Quinzii，<a href="https://www.brookings.edu/wp-content/uploads/2004/01/2004a_bpea_geanakoplos.pdf">Demography and the Long-Run Predictability of the Stock Market</a>（Brookings Papers, 2004）。</li>
@@ -322,7 +351,7 @@ details .table-scroll{border:0;border-top:1px solid var(--grid);border-radius:0 
     <li>World population: World Bank SP.POP.TOTL, via <a href="https://github.com/datasets/population">datasets/population</a>.</li>
     <li>Share of people online: World Bank IT.NET.USER.ZS (<a href="https://www.indexmundi.com/facts/world/internet-penetration">1990–2020 series</a>); 2025 is the 6 billion people, 74%, from <a href="https://www.itu.int/en/mediacentre/Pages/PR-2025-11-17-Facts-and-Figures.aspx">ITU Facts and Figures 2025</a>.</li>
     <li>Constituent revenue and earnings growth: Nasdaq index research, <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a> and <a href="https://indexes.nasdaqomx.com/docs/Nasdaq-100_A%20Tale%20of%20Three%20Crises%20over%20Two%20Decades.pdf">A Tale of Three Crises over Two Decades</a>.</li>
-    <li>P/E: 1999 and 2000 year-ends from Nasdaq Index Research, <a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a> (November 2025); 2016 onward from Siblis Research, <a href="https://siblisresearch.com/data/nasdaq-100-pe-ratio/">NASDAQ 100 P/E Ratio</a>, year-end table and free API (read November 2026).</li>
+    <li>P/E: 1999 and 2000 year-ends from Nasdaq Index Research, <a href="https://www.nasdaq.com/articles/is-ai-another-bubble-for-the-nasdaq-100">Is AI Another Bubble for the Nasdaq-100?</a> (November 2025); 2019-04-30 from Nasdaq's <a href="https://indexes.nasdaqomx.com/docs/NDX%20P-E%20Research.pdf">NDX P/E Research</a>; 2016 onward from Siblis Research, <a href="https://siblisresearch.com/data/nasdaq-100-pe-ratio/">NASDAQ 100 P/E Ratio</a>, year-end table and free API (read November 2026). Annual P/E: Nasdaq, <a href="https://indexes.nasdaq.com/docs/NDX_Extended%20Presentation_December%202022.pdf">NDX Extended Presentation</a> (December 2022), page 18. Forward P/E: <a href="https://historyofmarket.com/nasdaq/ndx-forward-pe/">History of Market</a>, data used under CC BY 4.0.</li>
     <li>ChatGPT users: TechCrunch, <a href="https://techcrunch.com/2026/02/27/chatgpt-reaches-900m-weekly-active-users">ChatGPT reaches 900M weekly active users</a> (February 2026).</li>
     <li>Capital spending at the four companies: The Motley Fool, <a href="https://www.fool.com/research/ai-companies-spending-on-data-centers/">AI hyperscaler capital expenditures over time</a>; Yahoo Finance, <a href="https://finance.yahoo.com/sectors/technology/article/meta-microsoft-amazon-and-alphabet-are-about-to-spend-a-shocking-amount-of-money-to-dominate-the-ai-era-115359575.html">2026 capital spending plans</a>.</li>
     <li>Age structure: Geanakoplos, Magill, Quinzii, <a href="https://www.brookings.edu/wp-content/uploads/2004/01/2004a_bpea_geanakoplos.pdf">Demography and the Long-Run Predictability of the Stock Market</a> (Brookings Papers, 2004).</li>
@@ -347,15 +376,30 @@ var MILESTONES = [
   ["1986-03-13","微软上市","Microsoft IPO",2],["1991-08-06","万维网公开","Web goes public",3],["1995-08-09","网景上市","Netscape IPO",1],["2000-03-27","泡沫见顶","Dot-com peak",1],
   ["2004-08-19","Google 上市","Google IPO",2],["2007-06-29","iPhone 发售","iPhone launch",1],["2008-09-15","雷曼破产","Lehman fails",2],["2020-03-11","新冠大流行","COVID pandemic",2],["2022-11-30","ChatGPT 发布","ChatGPT launch",1]
 ];
-// trailing P/E, from data/raw/valuation/ndx_pe_trailing.csv on the main branch: [date, P/E, source] with source 1 = Siblis Research, 0 = Nasdaq index research
-var PE = [["1999-12-31",104,0],["2000-12-29",113,0],["2016-12-30",23.08,1],["2017-12-29",25.84,1],["2018-12-31",20.75,1],["2019-12-31",26.47,1],["2020-12-31",39.72,1],["2021-12-31",38,1],["2022-12-30",23.72,1],["2023-12-29",30.25,1],["2024-06-28",31.82,1],["2024-12-31",32.36,1],["2025-03-31",28.73,1],["2025-06-30",32.24,1],["2025-09-30",32.98,1],["2025-12-31",32.32,1],["2026-06-30",35.24,1],["2026-09-30",35.09,1],["2026-10-30",32.76,1]].map(function(r){ return { d: dayOf(r[0]), v: r[1], s: r[2] }; });
-var PE_GAP = 400;   // points further apart than this many days are not joined by a line
+// P/E series and out-of-sample errors, generated by scripts/page_embed.py on the main branch
+// trailing P/E: [day, P/E, source] with source 1 = Siblis Research, 0 = Nasdaq index research
+var PE_TTM = [[5204,104,0],[5568,113,0],[11413,23.08,1],[11777,25.84,1],[12144,20.75,1],[12264,24.5,0],[12509,26.47,1],[12875,39.72,1],[13240,38,1],[13604,23.72,1],[13968,30.25,1],[14150,31.82,1],[14336,32.36,1],[14426,28.73,1],[14517,32.24,1],[14609,32.98,1],[14701,32.32,1],[14882,35.24,1],[14974,35.09,1],[15004,32.76,1]];
+// Nasdaq's annual FY P/E, read off the chart on p.18 of its December 2022 presentation (2001 is the printed 208.3): [day of that year's last close, P/E, year]
+var PE_FY = [[5935,208.3,2001],[6300,38.4,2002],[6665,40.6,2003],[7031,36.5,2004],[7395,31.3,2005],[7759,31.5,2006],[8126,28.7,2007],[8492,16.9,2008],[8857,24.5,2009],[9222,18.8,2010],[9586,14.7,2011],[9953,16.7,2012],[10318,22,2013],[10683,22.3,2014],[11048,22.9,2015],[11413,22.8,2016],[11777,24.6,2017],[12144,20.1,2018],[12509,26.9,2019],[12875,37.7,2020],[13240,37.3,2021],[13604,22,2022]];
+// 12-month forward P/E, weekly, History of Market (CC BY 4.0): [day, P/E]
+var PE_FWD = [[5687,73.37],[5694,77.28],[5701,73.87],[5708,80.3],[5715,82.05],[5722,64.02],[5729,65.95],[5736,59.71],[5743,64.17],[5750,68.12],[5757,62.41],[5764,65.9],[5771,67.32],[5778,70.12],[5785,71.12],[5792,68.05],[5799,64.1],[5806,66.93],[5813,62.04],[5820,56.73],[5827,56.42],[5834,46.3],[5841,48.78],[5848,50.18],[5855,54.96],[5862,55.47],[5869,60.1],[5876,62.27],[5883,64.55],[5890,66.42],[5897,66.02],[5904,66.93],[5911,69.14],[5918,66.44],[5925,56.7],[5932,51.93],[5939,53.53],[5946,52.22],[5953,49.47],[5960,49.79],[5967,48.5],[5974,45.15],[5981,44.49],[5988,41.69],[5995,43.86],[6002,47.09],[6009,45.03],[6016,44.26],[6023,44.27],[6030,42.15],[6037,41.04],[6044,41.99],[6051,38.48],[6058,36.25],[6065,36.19],[6072,40.04],[6079,37.61],[6086,35.95],[6093,32.33],[6100,31.64],[6107,29.44],[6114,30.21],[6121,30.48],[6128,28.64],[6135,27.54],[6142,26.6],[6149,26.14],[6156,27.31],[6163,29.16],[6170,29.44],[6177,27.35],[6184,26.77],[6191,26.76],[6198,25.35],[6205,25.08],[6212,23.91],[6219,26.05],[6226,28.52],[6233,29.31],[6240,29.7],[6247,29.52],[6254,31.11],[6261,32.41],[6268,32.33],[6275,30.77],[6282,28.85],[6289,28.92],[6296,27.73],[6303,28.53],[6310,29.66],[6317,27.48],[6324,26.64],[6331,26.17],[6338,25.27],[6345,26],[6352,26.62],[6359,26.07],[6366,25.3],[6373,26.28],[6380,27.56],[6387,26.2],[6394,26.29],[6401,25.67],[6408,27.07],[6415,26.85],[6422,27.91],[6429,28.04],[6436,28.05],[6443,27.38],[6450,28.85],[6457,28.97],[6464,28.4],[6471,28.86],[6478,28.39],[6485,28.81],[6492,29.87],[6499,29],[6506,29.2],[6513,28.73],[6520,27.29],[6527,28.22],[6534,29.31],[6541,29.93],[6548,30.07],[6555,29.73],[6562,30.29],[6569,28.47],[6576,29.61],[6583,30.07],[6590,29.31],[6597,28.49],[6604,29.34],[6611,29.64],[6618,28.74],[6625,27.68],[6632,28.77],[6639,28.05],[6646,28.13],[6653,28.06],[6660,28.14],[6667,28.44],[6674,29.55],[6681,30.19],[6688,29.76],[6695,29.01],[6702,29.13],[6709,28.85],[6716,28.8],[6723,28.57],[6730,28.62],[6737,27.82],[6744,27.18],[6751,27.5],[6758,28.96],[6765,28.87],[6772,28.16],[6779,29.09],[6786,27.23],[6793,27.33],[6800,27.2],[6807,27.36],[6814,28.49],[6821,28.28],[6828,28.79],[6835,28.46],[6842,29.12],[6849,28.78],[6856,27.98],[6863,27.05],[6870,26.73],[6877,27.21],[6884,25.56],[6891,25.41],[6898,26.56],[6905,26.98],[6912,26.66],[6919,27.46],[6926,27.72],[6933,27.19],[6940,28.23],[6947,27.81],[6954,27.81],[6961,27.95],[6968,28.89],[6975,29.64],[6982,30.28],[6989,30.16],[6996,30.67],[7003,31.37],[7010,31.19],[7017,31.03],[7024,31.36],[7031,31.5],[7605,20.74],[7612,20.6],[7619,20.3],[7626,21.5],[7633,21.14],[7640,21.52],[7647,21.26],[7654,21.89],[7661,21.53],[7668,21.86],[7675,22.23],[7682,22.69],[7689,22.31],[7696,22.26],[7703,22.01],[7710,22.4],[7717,22.99],[7724,23.01],[7731,22.4],[7738,22.46],[7745,22.59],[7752,22.23],[7759,22.25],[7766,22.55],[7773,23.23],[7780,22.55],[7787,22.22],[7794,22.5],[7801,22.32],[7808,22.61],[7815,22.86],[7822,21.33],[7829,21.41],[7836,21.31],[7843,21.88],[7850,21.51],[7857,21.94],[7864,21.9],[7871,22.15],[7878,22.51],[7885,22.56],[7892,22.58],[7899,22.56],[7906,22.42],[7913,22.67],[7920,22.37],[7927,22.75],[7934,22.34],[7941,22.3],[7948,22.76],[7955,23.16],[7962,23.16],[7969,22.18],[7976,21.64],[7983,21.55],[7990,21.08],[7997,21.81],[8004,22.02],[8011,21.56],[8018,21.94],[8025,22.41],[8032,22.66],[8039,23.19],[8046,23.46],[8053,22.84],[8060,23.34],[8067,23.48],[8074,21.48],[8081,21.59],[8088,21.32],[8095,21.99],[8102,22.47],[8109,21.83],[8116,22.1],[8123,21.92],[8130,20.28],[8137,19.7],[8144,19.03],[8151,18.47],[8158,19.33],[8165,18.52],[8172,18.56],[8179,18.48],[8186,18.22],[8193,17.86],[8200,17.93],[8207,18.35],[8214,18.45],[8221,19.37],[8228,18.6],[8235,19.61],[8242,19.84],[8249,20.51],[8256,20.28],[8263,20.98],[8270,20.21],[8277,20.85],[8284,20.26],[8291,19.93],[8298,19.42],[8305,18.62],[8312,18.26],[8319,18.19],[8326,18.33],[8333,18.44],[8340,18.29],[8347,19.27],[8354,19.54],[8361,19.2],[8368,18.57],[8375,17.47],[8382,17.6],[8389,17.36],[8396,16.63],[8403,14.67],[8410,12.81],[8417,13.42],[8424,12.5],[8431,14.04],[8438,13.59],[8445,12.83],[8452,11.98],[8459,13.09],[8466,13.14],[8473,13.66],[8480,13.92],[8487,13.29],[8494,14.16],[8501,13.8],[8508,13.75],[8515,13.72],[8522,14.16],[8529,15.6],[8536,15.19],[8543,14.37],[8550,13.84],[8557,13.22],[8564,14.52],[8571,14.82],[8578,15.53],[8585,16.25],[8592,16.5],[8599,16.64],[8606,16.81],[8613,17.05],[8620,17.02],[8627,16.51],[8634,16.55],[8641,17.33],[8648,17.9],[8655,17.76],[8662,17.44],[8669,17.44],[8676,17.02],[8683,16.64],[8690,17.7],[8697,18.27],[8704,18.25],[8711,18.28],[8718,18.08],[8725,18.29],[8732,18.22],[8739,18.07],[8746,18.46],[8753,18.8],[8760,18.32],[8767,17.84],[8774,18.44],[8781,18.27],[8788,18.06],[8795,16.93],[8802,17.41],[8809,17.85],[8816,17.51],[8823,17.42],[8830,17.55],[8837,17.34],[8844,17.33],[8851,17.78],[8858,17.55],[8865,17.64],[8872,17.23],[8879,16.11],[8886,15.28],[8893,15.25],[8900,15.41],[8907,15.71],[8914,15.59],[8921,16.11],[8928,16.34],[8935,16.35],[8942,16.46],[8949,16.39],[8956,16.53],[8963,16.53],[8970,16.59],[8977,16.03],[8984,14.73],[8991,15.14],[8998,14.41],[9005,14.57],[9012,14.35],[9019,14.41],[9026,14.89],[9033,14.2],[9040,13.32],[9047,13.92],[9054,13.73],[9061,14.16],[9068,14.06],[9075,14.28],[9082,13.64],[9089,13.67],[9096,13.39],[9103,13.96],[9110,14.04],[9117,14.47],[9124,14.88],[9131,14.62],[9138,14.76],[9145,15.24],[9152,15.08],[9159,15.08],[9166,15.46],[9173,15.09],[9180,15.03],[9187,15.12],[9194,15.31],[9201,15.43],[9208,15.32],[9215,15.45],[9222,15.32],[9229,15.68],[9236,15.78],[9243,14.99],[9250,14.88],[9257,15.31],[9264,15.57],[9271,15.58],[9278,15.18],[9285,15.17],[9292,14.74],[9299,14.18],[9306,14.73],[9313,14.87],[9320,14.67],[9327,14.53],[9334,14.6],[9341,14.75],[9348,13.92],[9355,13.87],[9362,13.63],[9369,13.54],[9376,13.26],[9383,12.83],[9390,12.67],[9397,12.75],[9404,13.54],[9411,13.76],[9418,13.4],[9425,13.48],[9432,13.1],[9439,12.12],[9446,12.04],[9453,11.23],[9460,11.92],[9467,11.91],[9474,11.88],[9481,12.64],[9488,12.04],[9495,11.66],[9502,12],[9509,12.87],[9516,12.61],[9523,13.01],[9530,12.75],[9537,12.71],[9544,12.16],[9551,11.6],[9558,12.37],[9565,12.48],[9572,12.11],[9579,12.29],[9586,12.23],[9593,12.58],[9600,12.63],[9607,12.97],[9614,12.73],[9621,12.99],[9628,13.03],[9635,13.2],[9642,13.26],[9649,13.44],[9656,13.43],[9663,13.71],[9670,13.64],[9677,13.74],[9684,13.71],[9691,13.33],[9698,13.23],[9705,13.37],[9712,12.83],[9719,12.7],[9726,12.03],[9733,12.27],[9740,12.01],[9747,12.47],[9754,12.47],[9761,12.55],[9768,12.7],[9775,12.7],[9782,12.56],[9789,12.79],[9796,13.12],[9803,13.24],[9810,13.43],[9817,13.71],[9824,13.69],[9831,13.62],[9838,13.94],[9845,14.01],[9852,14.01],[9859,13.63],[9866,13.65],[9873,13.17],[9880,13.05],[9887,13.14],[9894,13.09],[9901,12.73],[9908,12.47],[9915,12.96],[9922,13.11],[9929,12.88],[9936,12.92],[9943,13.1],[9950,12.88],[9957,13.43],[9964,13.52],[9971,13.51],[9978,13.73],[9985,13.87],[9992,13.9],[9999,13.85],[10006,13.7],[10013,13.71],[10020,13.97],[10027,13.95],[10034,13.95],[10041,14.02],[10048,13.76],[10055,14.18],[10062,13.8],[10069,14.41],[10076,14.91],[10083,15.09],[10090,15.32],[10097,15.1],[10104,15.02],[10111,14.81],[10118,14.55],[10125,14.21],[10132,14.32],[10139,14.56],[10146,15.1],[10153,15.42],[10160,15.76],[10167,16.07],[10174,15.92],[10181,15.66],[10188,15.92],[10195,15.63],[10202,15.91],[10209,16.11],[10216,16.29],[10223,16.23],[10230,16.28],[10237,16.21],[10244,16.9],[10251,16.98],[10258,16.95],[10265,16.86],[10272,17.2],[10279,17.2],[10286,17.51],[10293,17.56],[10300,17.32],[10307,17.65],[10314,17.76],[10321,17.55],[10328,17.59],[10335,17.7],[10342,17.42],[10349,17.43],[10356,17.55],[10363,18.04],[10370,17.97],[10377,18.09],[10384,18.09],[10391,17.69],[10398,17.76],[10405,17.3],[10412,16.48],[10419,15.97],[10426,16.32],[10433,16.03],[10440,16.26],[10447,16.09],[10454,16.19],[10461,16.56],[10468,16.78],[10475,16.98],[10482,16.68],[10489,16.76],[10496,17.51],[10503,17.82],[10510,17.68],[10517,17.82],[10524,17.74],[10531,17.27],[10538,17.3],[10545,17.69],[10552,17.96],[10559,18.04],[10566,18.02],[10573,17.84],[10580,17.93],[10587,17.6],[10594,17.41],[10601,16.69],[10608,16.55],[10615,17.34],[10622,17.78],[10629,17.81],[10636,18.08],[10643,18.09],[10650,18.39],[10657,18.23],[10664,17.72],[10671,18.01],[10678,17.76],[10685,17.38],[10692,17.3],[10699,17],[10706,17.58],[10713,17.07],[10720,17.47],[10727,18.16],[10734,18.39],[10741,18.34],[10748,18.08],[10755,17.76],[10762,18.37],[10769,17.77],[10776,17.68],[10783,18.03],[10790,17.76],[10797,18.56],[10804,18.16],[10811,18.07],[10818,18.2],[10825,18.25],[10832,18.16],[10839,18],[10846,17.88],[10853,18.14],[10860,18],[10867,17.78],[10874,17.67],[10881,18.83],[10888,18.24],[10895,18.54],[10902,18.22],[10909,18.26],[10916,16.86],[10923,17.36],[10930,16.75],[10937,17.28],[10944,17.28],[10951,16.76],[10958,16.96],[10965,17.41],[10972,17.68],[10979,18.35],[10986,18.44],[10993,18.78],[11000,17.94],[11007,18.66],[11014,18.61],[11021,18.72],[11028,17.93],[11035,17.8],[11042,18.27],[11049,18.13],[11056,16.87],[11063,16.44],[11070,16.92],[11077,17.21],[11084,16.14],[11091,16.12],[11098,16.66],[11105,16.9],[11112,17.28],[11119,17.38],[11126,17.52],[11133,17.46],[11140,17.95],[11147,17.69],[11154,17.95],[11161,17.82],[11168,17.5],[11175,17.44],[11182,17.39],[11189,17.48],[11196,18.04],[11203,17.95],[11210,17.71],[11217,17.37],[11224,17.05],[11231,17.61],[11238,17.96],[11245,18.13],[11252,18.44],[11259,18.61],[11266,18.8],[11273,18.8],[11280,18.7],[11287,18.57],[11294,18.59],[11301,18.08],[11308,18.53],[11315,18.56],[11322,18.59],[11329,18.46],[11336,18.22],[11343,18.3],[11350,18.09],[11357,17.55],[11364,17.83],[11371,18],[11378,18.19],[11385,17.65],[11392,18.16],[11399,18.19],[11406,18.18],[11413,17.86],[11420,18.36],[11427,18.5],[11434,18.47],[11441,18.76],[11448,18.72],[11455,19.12],[11462,19.45],[11469,19.46],[11476,19.51],[11483,19.53],[11490,19.56],[11497,19.21],[11504,19.38],[11511,19.23],[11518,18.96],[11525,19.2],[11532,19.65],[11539,19.81],[11546,19.85],[11553,19.68],[11560,20.09],[11567,20.38],[11574,19.84],[11581,19.58],[11588,19.86],[11595,19.2],[11602,19.19],[11609,19.75],[11616,19.92],[11623,19.69],[11630,19.5],[11637,19.22],[11644,19.06],[11651,19.13],[11658,19.64],[11665,19.34],[11672,19.56],[11679,19.29],[11686,19.34],[11693,19.52],[11700,19.57],[11707,19.53],[11714,19.72],[11721,19.9],[11728,19.84],[11735,19.8],[11742,20.03],[11749,19.74],[11756,19.73],[11763,20.02],[11770,19.85],[11777,19.59],[11784,20.2],[11791,20.35],[11798,20.36],[11805,20.71],[11812,19.74],[11819,18.62],[11826,19.61],[11833,19.94],[11840,19.65],[11847,20.46],[11854,20.17],[11861,18.53],[11868,18.71],[11875,18.27],[11882,18.81],[11889,18.87],[11896,18.58],[11903,18.86],[11910,19.34],[11917,19.08],[11924,19.28],[11931,19.58],[11938,19.74],[11945,19.96],[11952,19.62],[11959,19.17],[11966,19.59],[11973,20],[11980,19.81],[11987,19.6],[11994,19.77],[12001,19.79],[12008,19.69],[12015,19.95],[12022,20.37],[12029,19.74],[12036,20.02],[12043,19.98],[12050,20.04],[12057,19.43],[12064,18.77],[12071,18.62],[12078,17.9],[12085,18.26],[12092,18.46],[12099,18.07],[12106,17.18],[12113,18.3],[12120,17.4],[12127,17.36],[12134,16.02],[12141,16.57],[12148,17.11],[12155,17.55],[12162,17.98],[12169,18.06],[12176,18.5],[12183,18.62],[12190,19.02],[12197,19.14],[12204,19.25],[12211,18.86],[12218,19.62],[12225,19.58],[12232,19.69],[12239,20.19],[12246,20.27],[12253,20.36],[12260,20.67],[12267,20.69],[12274,20.02],[12281,19.79],[12288,19.23],[12295,18.76],[12302,19.54],[12309,19.72],[12316,20.35],[12323,20.1],[12330,20.49],[12337,20.7],[12344,20.35],[12351,20.81],[12358,19.76],[12365,19.64],[12372,19.57],[12379,19.17],[12386,19.7],[12393,20.07],[12400,20.16],[12407,19.94],[12414,19.47],[12421,19.61],[12428,19.79],[12435,19.81],[12442,20.24],[12449,20.57],[12456,20.79],[12463,20.92],[12470,20.99],[12477,21.29],[12484,21.25],[12491,21.44],[12498,21.89],[12505,21.95],[12512,21.95],[12519,22.29],[12526,22.77],[12533,22.54],[12540,21.84],[12547,22.91],[12554,23.29],[12561,22.83],[12568,20.51],[12575,20.67],[12582,19.58],[12589,17.7],[12596,19.64],[12603,19.79],[12610,22.09],[12617,23.9],[12624,23.86],[12631,23.71],[12638,25.07],[12645,24.87],[12652,25.64],[12659,25.85],[12666,26.49],[12673,26],[12680,26.81],[12687,26.13],[12694,27.24],[12701,28.48],[12708,27.81],[12715,27.14],[12722,27.36],[12729,27.81],[12736,27.75],[12743,28.57],[12750,29.63],[12757,28.51],[12764,27.09],[12771,26.62],[12778,27.01],[12785,27.2],[12792,28.18],[12799,28.43],[12806,28.01],[12813,26.25],[12820,28.55],[12827,28.04],[12834,27.81],[12841,28.5],[12848,29.01],[12855,28.53],[12862,29.2],[12869,28.78],[12876,29.09],[12883,29.35],[12890,28.58],[12897,29.51],[12904,27.91],[12911,28.95],[12918,29.27],[12925,28.6],[12932,26.97],[12939,26.33],[12946,26.81],[12953,26.6],[12960,26.83],[12967,27.3],[12974,28.31],[12981,28.62],[12988,28.29],[12995,26.7],[13002,26.24],[13009,25.57],[13016,25.51],[13023,25.92],[13030,26.03],[13037,26.35],[13044,26.38],[13051,26.87],[13058,27.47],[13065,27.57],[13072,27.22],[13079,28.01],[13086,26.89],[13093,26.91],[13100,26.9],[13107,26.63],[13114,27.3],[13121,27.66],[13128,27.13],[13135,26.99],[13142,26.99],[13149,26.02],[13156,26.03],[13163,26.59],[13170,27.04],[13177,28.19],[13184,28.94],[13191,28.65],[13198,29.2],[13205,28.15],[13212,27.55],[13219,28.5],[13226,27.51],[13233,28.38],[13240,28.36],[13247,27],[13254,26.97],[13261,24.95],[13268,24.77],[13275,25.24],[13282,24.51],[13289,23.91],[13296,24.2],[13303,23.54],[13310,22.61],[13317,24.46],[13324,25.02],[13331,25.13],[13338,24.19],[13345,23.42],[13352,22.4],[13359,21.83],[13366,21.52],[13373,20.96],[13380,20.05],[13387,21.49],[13394,21.22],[13401,19.98],[13408,18.98],[13415,20.3],[13422,19.55],[13429,20.46],[13436,20.27],[13443,20.95],[13450,22.3],[13457,22.79],[13464,23.54],[13471,22.96],[13478,21.92],[13485,20.99],[13492,21.8],[13499,20.53],[13506,19.47],[13513,18.89],[13520,19.11],[13527,18.56],[13534,19.72],[13541,20.69],[13548,19.63],[13555,21.39],[13562,21.14],[13569,21.33],[13576,21.75],[13583,20.95],[13590,20.36],[13597,20.17],[13604,20.07],[13611,20.29],[13618,21.25],[13625,21.41],[13632,22.7],[13639,23.51],[13646,23.01],[13653,23.01],[13660,22.28],[13667,22.85],[13674,21.95],[13681,23.16],[13688,23.47],[13695,24.22],[13702,23.93],[13709,23.93],[13716,23.77],[13723,24.04],[13730,24.11],[13737,24.18],[13744,25.01],[13751,25.52],[13758,25.86],[13765,25.83],[13772,26.75],[13779,25.95],[13786,26.44],[13793,26.11],[13800,26.92],[13807,26.68],[13814,25.84],[13821,24.91],[13828,24.41],[13835,23.72],[13842,23.86],[13849,24.56],[13856,24.12],[13863,23.91],[13870,23.01],[13877,22.97],[13884,23.28],[13891,23.25],[13898,22.53],[13905,21.79],[13912,23.18],[13919,23.8],[13926,24.14],[13933,24.13],[13940,24.02],[13947,23.94],[13954,24.65],[13961,24.78],[13968,24.75],[13975,23.89],[13982,24.59],[13989,25.22],[13996,25.53],[14003,25.59],[14010,26.05],[14017,25.53],[14024,25.77],[14031,26.25],[14038,25.81],[14045,25.4],[14052,26.03],[14059,25.68],[14066,25.43],[14073,25.29],[14080,23.91],[14087,24.78],[14094,24.9],[14101,25.16],[14108,25.57],[14115,25.7],[14122,25.23],[14129,25.77],[14136,26.56],[14143,26.47],[14150,26.34],[14157,27.2],[14164,27.01],[14171,25.82],[14178,25.2],[14185,24.43],[14192,24.51],[14199,25.76],[14206,25.92],[14213,25.59],[14220,24.01],[14227,25.33],[14234,25.62],[14241,25.82],[14248,25.76],[14255,25.93],[14262,25.91],[14269,25.9],[14276,25.49],[14283,26.77],[14290,25.75],[14297,26.14],[14304,26.24],[14311,26.98],[14318,27.06],[14325,26.4],[14332,26.6],[14339,26.35],[14346,25.65],[14353,26.28],[14360,26.75],[14367,26.42],[14374,26.51],[14381,27.23],[14388,26.51],[14395,25.49],[14402,24.67],[14409,24.01],[14416,24.04],[14423,23.36],[14430,21.04],[14437,22.66],[14444,22.16],[14451,23.64],[14458,24.57],[14465,24.46],[14472,25.89],[14479,25.32],[14486,25.82],[14493,26.27],[14500,26.08],[14507,25.96],[14514,26.86],[14521,27.2],[14528,26.95],[14535,27.23],[14542,27.32],[14549,26.4],[14556,27.2],[14563,27.09],[14570,26.72],[14577,26.21],[14584,26.26],[14591,26.66],[14598,27.13],[14605,26.77],[14612,27.05],[14619,26.34],[14626,26.86],[14633,27.25],[14640,27.53],[14647,26.53],[14654,26.12],[14661,25.08],[14668,26.17],[14675,26.3],[14682,25.54],[14689,25.1],[14696,25.4],[14703,24.84],[14710,25.26],[14717,24.88],[14724,25.05],[14731,24.7],[14738,24.24],[14745,23.99],[14752,24.16],[14759,23.94],[14766,23.51],[14773,22.87],[14780,21.25],[14787,20.44],[14794,21.19],[14801,22.01],[14808,23.18],[14815,23.25],[14822,22.99],[14829,24.27],[14836,24],[14843,24.05],[14850,24.75],[14857,23.39],[14864,23.72],[14871,24.14],[14878,22.82],[14885,22.83],[14892,23.49],[14899,22.3],[14906,21.62],[14913,21.35],[14918,22.37]];
+// rolling out-of-sample errors, ln(actual / forecast): band = 4-year slope from the latest close, 10th/90th percentile by months ahead; tab = 12-month rows [rule, window, p10, p50, p90, share inside in-sample ±1σ, n]
+var OOS = {"h":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36],"lo":[-0.0889,-0.1168,-0.1447,-0.1743,-0.1908,-0.215,-0.2073,-0.2502,-0.2891,-0.3379,-0.3786,-0.3691,-0.3677,-0.3637,-0.3955,-0.4024,-0.4709,-0.4578,-0.4449,-0.461,-0.4701,-0.4633,-0.4675,-0.4611,-0.4633,-0.4467,-0.4683,-0.5037,-0.5071,-0.4972,-0.5006,-0.5623,-0.5793,-0.6483,-0.6474,-0.6956],"hi":[0.0798,0.1123,0.1421,0.1645,0.1799,0.2138,0.2331,0.2447,0.254,0.2777,0.2946,0.3125,0.3195,0.3267,0.353,0.3771,0.3874,0.4171,0.4155,0.4431,0.4528,0.462,0.4707,0.4782,0.5036,0.5151,0.5363,0.5616,0.5678,0.5875,0.6006,0.6294,0.6346,0.6386,0.66,0.6837],"tab":[["close","3y",-0.3206,0.0348,0.3138,0.31,445],["close","4y",-0.3691,0.0645,0.3125,0.37,433],["close","5y",-0.4319,0.0704,0.2933,0.437,421],["close","10y",-0.4091,0.0606,0.2684,0.582,361],["close","all",-0.3446,0.0495,0.2669,0.737,445],["trend","4y",-0.4447,0.0678,0.3789,0.27,433]]};
+var PE = PE_TTM.map(function(r){ return { d: r[0], v: r[1], s: r[2] }; });
+var FY = PE_FY.map(function(r){ return { d: r[0], v: r[1], y: r[2] }; });
+var FWD = PE_FWD.map(function(r){ return { d: r[0], v: r[1] }; });
+var PE_GAP = 400, FWD_GAP = 30;   // points further apart than this many days are not joined by a line
 var STR = {
   zh: {
-    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaPE: "Nasdaq-100 滚动市盈率，对数坐标", tipPE: "市盈率", peNoData: ["暂无公开数据", "无数据"], ariaCalc: "阶段 ⑤ 的趋势线及其延长线，标出所选日期的点位",
+    ariaWrap: "指数与趋势线图表。按左右方向键逐日查看数值。", ariaMain: "Nasdaq-100 日收盘与五个上涨阶段的趋势线，对数坐标", ariaDev: "指数相对趋势线的偏离百分比", ariaPE: "Nasdaq-100 市盈率：滚动、Nasdaq 年度和预期三种口径，对数坐标", tipPE: "滚动市盈率", tipFY: function(y){ return "Nasdaq 年度 " + y; }, tipFwd: "预期市盈率", peNoData: ["暂无公开数据", "无数据"], ariaCalc: "阶段 ⑤ 的趋势线、延长线和从最新收盘延续斜率的情景线，标出所选日期的点位",
     perYr: "/年", stage: "阶段", unfitted: "下跌区间，未拟合", tipIndex: "指数", tipTrend: "趋势线", tipDev: "偏离", tipHigh: "距前高", atHigh: "新高",
-    kFut: "预测点位", kPast: "当日收盘",
-    subFut: function(d, num, rate){ return d + " · 阶段 " + num + " 延长线，每年 " + rate; },
+    kFut: "固定斜率情景", kPast: "当日收盘",
+    subFut: function(d, num, rate, c){ return d + " · 从最新收盘 " + c + " 起，按阶段 " + num + " 的斜率每年 " + rate; },
+    kTrend: "拟合趋势水平", trendSub: function(num, p){ return "阶段 " + num + " 趋势线，当日收盘相对它 " + p; }, trendSubFut: function(num, p){ return "阶段 " + num + " 趋势线延长，情景相对它 " + p; },
+    kOos: "回测误差 80% 区间", oosSub: "历史上同样外推的误差，见下表",
+    calcIntro: function(num, rate){ return "假设阶段 " + num + " 每年 " + rate + " 的斜率不变，从最新收盘往后延续，看会到哪里。这是情景，不是预测：五个阶段是事后挑出的上涨区间，熊市不参与拟合，斜率只描述过去。±1σ 带是样本内的拟合残差，不包含斜率改变和熊市的风险；实际的不确定性看浅蓝色的回测区间和下面的检验。"; },
+    oosHead: ["斜率取自", "1 年后误差 80% 区间", "中位数", "落在 ±1σ 带内"],
+    oosRow: { "3y": ["过去 3 年"], "4y": ["过去 4 年", "约等于阶段 ⑤ 的长度"], "5y": ["过去 5 年"], "10y": ["过去 10 年"], all: ["1985 年以来全部"] }, oosTrend: ["过去 4 年", "直接取趋势线（旧计算器的做法）"],
     subPast: function(d, c){ return d + (c ? "（休市，取 " + c + "）" : ""); },
     dateLabel: function(a){ return "日期（" + a + " 至 2028-12-31）"; },
     ariaScale: "纵轴刻度", scaleLog: "对数坐标：相同的涨幅占相同的高度，所以固定的年增长率是一条直线。", scaleLin: "线性坐标：纵轴是实际点位，同样的年增长率会显示成越来越陡的曲线。",
@@ -370,10 +414,15 @@ var STR = {
     meta: function(a, b, n, c0, c1){ return "日收盘 " + a + " 至 " + b + " · " + n + " 个交易日 · " + c0 + " → " + c1 + " 点"; }
   },
   en: {
-    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaPE: "Nasdaq-100 trailing P/E, log scale", tipPE: "P/E", peNoData: ["No public data", "No data"], ariaCalc: "Stage 5 trend line and its extension, with the selected date marked",
+    ariaWrap: "Index and trend charts. Use the left and right arrow keys to step through days.", ariaMain: "Nasdaq-100 daily close with trend lines for the five rising stages, log scale", ariaDev: "Index deviation from the trend line, in percent", ariaPE: "Nasdaq-100 P/E on three bases: trailing, Nasdaq annual and forward, log scale", tipPE: "Trailing P/E", tipFY: function(y){ return "Nasdaq FY " + y; }, tipFwd: "Forward P/E", peNoData: ["No public data", "No data"], ariaCalc: "Stage 5 trend line, its extension and the scenario line continuing the slope from the latest close, with the selected date marked",
     perYr: "/yr", stage: "Stage", unfitted: "Fall, not fitted", tipIndex: "Index", tipTrend: "Trend", tipDev: "Deviation", tipHigh: "From prior high", atHigh: "New high",
-    kFut: "Projected level", kPast: "Close that day",
-    subFut: function(d, num, rate){ return d + " · stage " + num + " extended, " + rate + " a year"; },
+    kFut: "Fixed-slope scenario", kPast: "Close that day",
+    subFut: function(d, num, rate, c){ return d + " · from the latest close of " + c + " at stage " + num + "'s slope, " + rate + " a year"; },
+    kTrend: "Fitted trend level", trendSub: function(num, p){ return "Stage " + num + " trend line; that day's close was " + p + " from it"; }, trendSubFut: function(num, p){ return "Stage " + num + " trend line extended; the scenario is " + p + " from it"; },
+    kOos: "Backtest error, 80% range", oosSub: "Past errors of the same extrapolation; see the table below",
+    calcIntro: function(num, rate){ return "What if stage " + num + "'s slope of " + rate + " a year held, starting from the latest close? This is a scenario, not a forecast: the five stages are rises picked after the fact, bear markets are left out of the fit, and a slope only describes the past. The ±1σ band is in-sample fitting error and leaves out the risk of a change in slope or a bear market; for the real uncertainty, see the light blue backtest range and the test below."; },
+    oosHead: ["Slope taken from", "Error after 1 year, 80% range", "Median", "Inside the ±1σ band"],
+    oosRow: { "3y": ["Past 3 years"], "4y": ["Past 4 years", "about the length of stage ⑤"], "5y": ["Past 5 years"], "10y": ["Past 10 years"], all: ["All data since 1985"] }, oosTrend: ["Past 4 years", "reading the trend line itself (the old calculator)"],
     subPast: function(d, c){ return d + (c ? " (market closed; using " + c + ")" : ""); },
     dateLabel: function(a){ return "Date (" + a + " to 2028-12-31)"; },
     ariaScale: "Vertical axis scale", scaleLog: "Log scale: equal percentage moves take equal height, so a constant annual growth rate is a straight line.", scaleLin: "Linear scale: the axis shows actual points, so the same annual growth rate turns into an ever steeper curve.",
@@ -568,57 +617,68 @@ function drawDev(){
   G.dev = g;
 }
 
-function peAt(d){   // the P/E point nearest to day d, if one is within a month
+function nearestPt(arr, d, win){   // the point of arr nearest to day d, if one is within win days
   var best = null, k;
-  for (k = 0; k < PE.length; k++) if (Math.abs(PE[k].d - d) <= 31 && (!best || Math.abs(PE[k].d - d) < Math.abs(best.d - d))) best = PE[k];
+  for (k = 0; k < arr.length; k++) if (Math.abs(arr[k].d - d) <= win && (!best || Math.abs(arr[k].d - d) < Math.abs(best.d - d))) best = arr[k];
   return best;
+}
+function runsOf(arr, gap){   // split a series where consecutive points are more than gap days apart
+  var runs = [], cur = null, k;
+  for (k = 0; k < arr.length; k++) { if (!k || arr[k].d - arr[k - 1].d > gap) { cur = []; runs.push(cur); } cur.push(arr[k]); }
+  return runs;
 }
 function drawPE(){
   var box = $("chart-pe"), W = Math.max(280, box.clientWidth), narrow = W < 560;
-  var g = { W: W, l: 40, t: 10, pw: W - 40 - 14, ph: narrow ? 130 : 170 };
+  var g = { W: W, l: 40, t: 10, pw: W - 40 - 14, ph: narrow ? 150 : 190 };
   g.x = function(d){ return g.l + (d - D0) / (D1 - D0) * g.pw; };
-  var mn = Infinity, mx = 0;
-  PE.forEach(function(p){ if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
-  var lo = Math.log(mn / 1.35), hi = Math.log(mx * 1.3);
+  var mn = Infinity, mx = 0, all = PE.concat(FY, FWD);
+  all.forEach(function(p){ if (p.v < mn) mn = p.v; if (p.v > mx) mx = p.v; });
+  var lo = Math.log(mn / 1.3), hi = Math.log(mx * 1.3);
   g.y = function(v){ return g.t + (hi - Math.log(v)) / (hi - lo) * g.ph; };
+  function line(r){ return r.map(function(p, q){ return (q ? "L" : "M") + g.x(p.d).toFixed(1) + "," + g.y(p.v).toFixed(1); }).join(""); }
   var H = g.t + g.ph + 24;
   box.textContent = "";
   var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaPE") }, box);
   var ticks = [10, 15, 20, 30, 50, 100, 200, 500].filter(function(v){ var l = Math.log(v); return l > lo + 0.05 && l < hi - 0.02; });
   drawFrame(svg, g, ticks, function(v){ return v + "×"; });
 
-  // stretches without data get a quiet label; points from one source closer than PE_GAP days form a line
-  var spans = [[D0, PE[0].d]], runs = [], cur = null, k;
-  for (k = 0; k < PE.length; k++) {
-    if (k && PE[k].d - PE[k - 1].d > PE_GAP) spans.push([PE[k - 1].d, PE[k].d]);
-    if (!k || PE[k].s !== PE[k - 1].s || PE[k].d - PE[k - 1].d > PE_GAP) { cur = []; runs.push(cur); }
-    cur.push(PE[k]);
-  }
-  if (D1 - PE[PE.length - 1].d > PE_GAP) spans.push([PE[PE.length - 1].d, D1]);
+  // stretches where no series has data get a quiet label
+  var ds = all.map(function(p){ return p.d; }).sort(function(x, y){ return x - y; }), spans = [[D0, ds[0]]], k;
+  for (k = 1; k < ds.length; k++) if (ds[k] - ds[k - 1] > PE_GAP) spans.push([ds[k - 1], ds[k]]);
   spans.forEach(function(sp){
     var a = g.x(sp[0]), b = g.x(sp[1]), label = L("peNoData").filter(function(t){ return b - a > textW(t, 11) + 24; })[0];
     if (label) el("text", { x: (a + b) / 2, y: g.t + g.ph / 2 + 4, "text-anchor": "middle", "class": "t-gap" }, svg, label);
   });
-  runs.forEach(function(r){
-    if (r.length < 2) return;
-    el("path", { d: r.map(function(p, q){ return (q ? "L" : "M") + g.x(p.d).toFixed(1) + "," + g.y(p.v).toFixed(1); }).join(""), "class": "l-pe" }, svg);
+
+  // forward P/E: a thin weekly line, broken at the 2005-06 gap
+  runsOf(FWD, FWD_GAP).forEach(function(r){ if (r.length > 1) el("path", { d: line(r), "class": "l-fwd" }, svg); });
+  // Nasdaq annual P/E: one dot a year, joined
+  runsOf(FY, PE_GAP).forEach(function(r){ if (r.length > 1) el("path", { d: line(r), "class": "l-fy" }, svg); });
+  FY.forEach(function(p, q){   // dots only where they don't crowd the line
+    var gap = Math.min(q ? g.x(p.d) - g.x(FY[q - 1].d) : 99, q < FY.length - 1 ? g.x(FY[q + 1].d) - g.x(p.d) : 99), rad = Math.min(3.5, gap / 2 - 0.5);
+    if (rad >= 3) el("circle", { cx: g.x(p.d), cy: g.y(p.v), r: rad, "class": "dot fy" }, svg);
   });
-  // dots: always at both ends of each run (they carry the source: filled or open), inside a run only where there is room
-  runs.forEach(function(r){
-    r.forEach(function(p, q){
-      var x = g.x(p.d), gap = Math.min(q ? x - g.x(r[q - 1].d) : 99, q < r.length - 1 ? g.x(r[q + 1].d) - x : 99), rad = Math.min(4, gap / 2 - 0.5);
-      if (q === 0 || q === r.length - 1) rad = Math.max(3, rad);
-      if (rad >= 3) el("circle", { cx: x, cy: g.y(p.v), r: rad, "class": p.s ? "dot pe" : "dot pe open" }, svg);
+  // trailing P/E: each source on its own; dots at both ends of each run (they carry the source), inside a run only where there is room
+  [1, 0].forEach(function(src){
+    runsOf(PE.filter(function(p){ return p.s === src; }), PE_GAP).forEach(function(r){
+      if (r.length > 1) el("path", { d: line(r), "class": "l-pe" }, svg);
+      r.forEach(function(p, q){
+        var x = g.x(p.d), gap = Math.min(q ? x - g.x(r[q - 1].d) : 99, q < r.length - 1 ? g.x(r[q + 1].d) - x : 99), rad = Math.min(4, gap / 2 - 0.5);
+        if (q === 0 || q === r.length - 1) rad = Math.max(3, rad);
+        if (rad >= 3) el("circle", { cx: x, cy: g.y(p.v), r: rad, "class": src ? "dot pe" : "dot pe open" }, svg);
+      });
     });
   });
 
-  // direct labels: the highest point and the latest one
-  var top = PE.reduce(function(a, p){ return p.v > a.v ? p : a; }, PE[0]), last = PE[PE.length - 1], lx = g.x(last.d), ly = g.y(last.v);
-  el("text", { x: g.x(top.d), y: g.y(top.v) - 9, "text-anchor": "middle", "class": "t-end" }, svg, Math.round(top.v) + "×");
-  PE.forEach(function(p){ if (lx - g.x(p.d) <= 64 && g.y(p.v) < ly) ly = g.y(p.v); });
+  // direct labels: the highest point overall and the latest trailing value
+  var top = all.reduce(function(a, p){ return p.v > a.v ? p : a; }, all[0]), last = PE[PE.length - 1], lx = g.x(last.d), ly = g.y(last.v);
+  el("text", { x: Math.max(g.l + 16, g.x(top.d)), y: g.y(top.v) - 9, "text-anchor": "middle", "class": "t-end" }, svg, Math.round(top.v) + "×");
+  all.forEach(function(p){ if (lx - g.x(p.d) <= 64 && lx - g.x(p.d) >= 0 && g.y(p.v) < ly) ly = g.y(p.v); });
   el("text", { x: lx, y: Math.max(g.t + 10, ly - 9), "text-anchor": "end", "class": "t-end" }, svg, last.v.toFixed(1) + "×");
 
   g.cross = el("line", { x1: 0, x2: 0, y1: g.t, y2: g.t + g.ph, "class": "cross" }, svg);
+  g.hfwd = el("circle", { r: 4, "class": "dot fwd", visibility: "hidden" }, svg);
+  g.hfy = el("circle", { r: 4, "class": "dot fy", visibility: "hidden" }, svg);
   g.hdot = el("circle", { r: 4, "class": "dot pe", visibility: "hidden" }, svg);
   g.hit = el("rect", { x: g.l, y: g.t, width: g.pw, height: g.ph, fill: "transparent" }, svg);
   G.pe = g;
@@ -631,24 +691,28 @@ function tipRow(parent, keyCls, name, value){
 }
 function show(e, on){ e.setAttribute("visibility", on ? "visible" : "hidden"); e.style.visibility = on ? "visible" : "hidden"; }
 function setHover(idx, anchor){
-  var tip = $("tip"), m = G.main, v = G.dev, pg = G.pe, wrap = $("wrap"), inStage, pq;
+  var tip = $("tip"), m = G.main, v = G.dev, pg = G.pe, wrap = $("wrap"), inStage, pq, py, pf;
   state.hover = idx;
-  if (idx < 0) { [m.cross, m.hdot, m.fdot, v.cross, v.hdot, pg.cross, pg.hdot].forEach(function(e){ show(e, false); }); tip.style.visibility = "hidden"; return; }
+  if (idx < 0) { [m.cross, m.hdot, m.fdot, v.cross, v.hdot, pg.cross, pg.hdot, pg.hfy, pg.hfwd].forEach(function(e){ show(e, false); }); tip.style.visibility = "hidden"; return; }
   inStage = stg[idx] >= 0;
   var X = m.x(days[idx]);
   [m.cross, v.cross, pg.cross].forEach(function(e){ e.setAttribute("x1", X); e.setAttribute("x2", X); show(e, true); });
   m.hdot.setAttribute("cx", X); m.hdot.setAttribute("cy", m.yl(lnc[idx])); show(m.hdot, true);
   if (inStage) { m.fdot.setAttribute("cx", X); m.fdot.setAttribute("cy", m.yl(fitv[idx])); v.hdot.setAttribute("cx", X); v.hdot.setAttribute("cy", v.y(dev[idx])); }
   show(m.fdot, inStage); show(v.hdot, inStage);
-  pq = peAt(days[idx]);
+  pq = nearestPt(PE, days[idx], 31); py = nearestPt(FY, days[idx], 31); pf = nearestPt(FWD, days[idx], 5);
   if (pq) { pg.hdot.setAttribute("cx", pg.x(pq.d)); pg.hdot.setAttribute("cy", pg.y(pq.v)); pg.hdot.setAttribute("class", pq.s ? "dot pe" : "dot pe open"); }
-  show(pg.hdot, !!pq);
+  if (py) { pg.hfy.setAttribute("cx", pg.x(py.d)); pg.hfy.setAttribute("cy", pg.y(py.v)); }
+  if (pf) { pg.hfwd.setAttribute("cx", pg.x(pf.d)); pg.hfwd.setAttribute("cy", pg.y(pf.v)); }
+  show(pg.hdot, !!pq); show(pg.hfy, !!py); show(pg.hfwd, !!pf);
   tip.textContent = "";
   h("div", "d", tip, iso(days[idx]) + " · " + (inStage ? L("stage") + " " + NUM[stg[idx]] : L("unfitted")));
   tipRow(tip, "", L("tipIndex"), fmtLvl(DATA.c[idx]));
   if (inStage) { tipRow(tip, "fit", L("tipTrend"), fmtLvl(Math.exp(fitv[idx]))); tipRow(tip, null, L("tipDev"), fmtPct(Math.exp(dev[idx]) - 1, 1)); }
   tipRow(tip, null, L("tipHigh"), fromHigh[idx] === 0 ? L("atHigh") : fmtPct(fromHigh[idx], 1));
   if (pq) tipRow(tip, "pe", L("tipPE") + (pq.d !== days[idx] ? " · " + iso(pq.d) : ""), pq.v.toFixed(1) + "×");
+  if (py) tipRow(tip, "fy", L("tipFY")(py.y), py.v.toFixed(1) + "×");
+  if (pf) tipRow(tip, "fwd", L("tipFwd") + (pf.d !== days[idx] ? " · " + iso(pf.d) : ""), pf.v.toFixed(1) + "×");
   var wr = wrap.getBoundingClientRect(), host = $(anchor === "dev" ? "chart-dev" : anchor === "pe" ? "chart-pe" : "chart-main").getBoundingClientRect();
   var tw = tip.offsetWidth, left = X + 14;
   if (left + tw > wr.width - 2) left = X - 14 - tw;
@@ -670,19 +734,33 @@ var CAP = dayOf("2028-12-31"), CMIN = LAST.a;
 function niceStep(x){ var p = Math.pow(10, Math.floor(Math.log(x) / Math.LN10)), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
 function fmtTick(v){ return v === 0 ? "0" : (v >= 1e6 ? (v / 1e6) + "M" : (v >= 1000 ? (v / 1000) + "K" : String(v))); }
 function cfn(d){ return LAST.y0 + (LAST.y1 - LAST.y0) * (d - LAST.a) / (LAST.b - LAST.a); }
+// the scenario: the stage's slope started from the latest close, so it joins the actual series without a jump
+var KSLOPE = (LAST.y1 - LAST.y0) / (LAST.b - LAST.a);
+function scen(d){ return lnc[N - 1] + KSLOPE * (d - D1); }
+// backtest error band (ln) at day d, interpolated between whole months after the latest close; k is "lo" or "hi"
+function oosAt(d, k){
+  var m = (d - D1) / 30.4375, a = OOS[k], i;
+  if (m <= 0) return 0;
+  if (m <= 1) return a[0] * m;
+  i = Math.floor(m);
+  if (i >= a.length) return a[a.length - 1];
+  return a[i - 1] + (a[i] - a[i - 1]) * (m - i);
+}
 function todayDay(){ var t = new Date(); return Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - T0) / 864e5); }
 function clampDay(d){ return Math.max(CMIN, Math.min(CAP, d)); }
 function crow(parent, k, v, sub){ var r = h("div", "crow", parent); h("span", "ck", r, k); var b = h("span", "cv", r, v); if (sub) h("span", "cs", b, sub); }
-// future dates read the extended trend line, past dates the actual close; growth is measured from the entry level
+// past dates read the actual close, future dates the scenario from the latest close; the fitted trend level is shown beside it; growth is measured from the entry level
 function entryLvl(){ return C.entry > 0 ? C.entry : DATA.c[N - 1]; }
 function calcReadout(){
-  var d = C.day, future = d > D1, rows = $("calc-rows"), e = entryLvl(), idx, lvl;
-  if (future) { lvl = Math.exp(cfn(d)); $("calc-when").textContent = L("subFut")(iso(d), NUM[S.length - 1], fmtPct(LAST.cagr, 1)); }
-  else { idx = onOrBefore(d); lvl = DATA.c[idx]; $("calc-when").textContent = L("subPast")(iso(d), days[idx] === d ? "" : iso(days[idx])); }
+  var d = C.day, future = d > D1, rows = $("calc-rows"), e = entryLvl(), idx, lvl, tr = Math.exp(cfn(d)), num = NUM[S.length - 1];
+  if (future) { lvl = Math.exp(scen(d)); $("calc-when").textContent = L("subFut")(iso(d), num, fmtPct(LAST.cagr, 1), fmtInt(DATA.c[N - 1])); }
+  else { idx = onOrBefore(d); lvl = DATA.c[idx]; tr = Math.exp(cfn(days[idx])); $("calc-when").textContent = L("subPast")(iso(d), days[idx] === d ? "" : iso(days[idx])); }
   $("calc-k").textContent = L(future ? "kFut" : "kPast");
   $("calc-value").textContent = fmtLvl(lvl);
   rows.textContent = "";
   crow(rows, L("change"), fmtPct(lvl / e - 1, 1), L("vsBuy")(fmtInt(e)));
+  crow(rows, L("kTrend"), fmtLvl(tr), L(future ? "trendSubFut" : "trendSub")(num, fmtPct(lvl / tr - 1, 1)));
+  if (future) crow(rows, L("kOos"), fmtLvl(lvl * Math.exp(oosAt(d, "lo"))) + " – " + fmtLvl(lvl * Math.exp(oosAt(d, "hi"))), L("oosSub"));
   if ($("calc-date").value !== iso(d)) $("calc-date").value = iso(d);
 }
 // the horizontal entry line; hidden when the level is outside the plotted range
@@ -702,16 +780,17 @@ function setEntry(v){
   try { localStorage.setItem("ndx-entry", $("calc-buy").value); } catch (e) {}
   calcReadout(); calcBuy();
 }
+// the big dot and its label mark the readout (actual close, or the scenario); the small orange dot marks the trend line
 function calcSel(){
-  var g = C.g, d = C.day, X, Y, v = cfn(d), idx, right;
+  var g = C.g, d = C.day, X, Y, v, idx, right;
   if (!g) return;
-  X = g.x(d); Y = g.yl(v); right = X > g.l + g.pw - 76;
+  if (d > D1) { X = g.x(d); v = scen(d); } else { idx = onOrBefore(d); X = g.x(days[idx]); v = lnc[idx]; }
+  Y = g.yl(v); right = X > g.l + g.pw - 76;
   g.sline.setAttribute("x1", X); g.sline.setAttribute("x2", X);
+  g.tdot.setAttribute("cx", X); g.tdot.setAttribute("cy", g.yl(cfn(d > D1 ? d : days[idx])));
   g.sdot.setAttribute("cx", X); g.sdot.setAttribute("cy", Y);
   g.slab.setAttribute("x", right ? X - 9 : X + 9); g.slab.setAttribute("y", Math.max(g.t + 12, Y - 11)); g.slab.setAttribute("text-anchor", right ? "end" : "start");
   g.slab.textContent = fmtLvl(Math.exp(v));
-  if (d <= D1) { idx = onOrBefore(d); g.adot.setAttribute("cx", g.x(days[idx])); g.adot.setAttribute("cy", g.yl(lnc[idx])); show(g.adot, true); }
-  else show(g.adot, false);
 }
 function calcDraw(){
   var box = $("calc-chart"), W = Math.max(260, box.clientWidth), narrow = W < 440, s = LAST, j, x0 = CMIN, x1 = CAP;
@@ -720,7 +799,7 @@ function calcDraw(){
   var lo = Infinity, hi = -Infinity, lin = C.scale === "lin", ticks = [], k, vmax, step;
   for (j = 0; j < N; j++) if (days[j] >= x0) { if (lnc[j] < lo) lo = lnc[j]; if (lnc[j] > hi) hi = lnc[j]; }
   var vmin = Math.exp(lo);   // lowest actual close in the window
-  lo = Math.min(lo, cfn(x0) - s.sigma); hi = Math.max(hi, cfn(x1) + s.sigma);
+  lo = Math.min(lo, cfn(x0) - s.sigma, scen(x1) + oosAt(x1, "lo")); hi = Math.max(hi, cfn(x1), cfn(D1) + s.sigma, scen(x1) + oosAt(x1, "hi"));
   if (lin) {   // linear: the axis starts at the lowest actual close, so the constant-rate line bends upward
     step = niceStep((Math.exp(hi) - vmin) / 6); vmax = Math.ceil(Math.exp(hi) * 1.03 / step) * step;
     g.yl = function(l){ return g.t + (1 - (Math.exp(l) - vmin) / (vmax - vmin)) * g.ph; };
@@ -734,6 +813,8 @@ function calcDraw(){
   }
   function yv(v){ return v > 0 ? g.yl(Math.log(v)) : g.t + g.ph; }
   function pts(off, a, b){ var n = lin ? 120 : 1, out = [], q, d; for (q = 0; q <= n; q++) { d = a + (b - a) * q / n; out.push(g.x(d).toFixed(1) + "," + g.yl(cfn(d) + off).toFixed(1)); } return out; }
+  // the scenario line (k null) or an edge of its backtest band (k "lo" / "hi"); the band changes width with the horizon, so it is sampled
+  function spts(k, a, b){ var n = 90, out = [], q, d; for (q = 0; q <= n; q++) { d = a + (b - a) * q / n; out.push(g.x(d).toFixed(1) + "," + g.yl(scen(d) + (k ? oosAt(d, k) : 0)).toFixed(1)); } return out; }
   var H = g.t + g.ph + 24;
   box.textContent = "";
   var svg = el("svg", { viewBox: "0 0 " + W + " " + H, height: H, role: "img", "aria-label": L("ariaCalc") }, box);
@@ -743,18 +824,20 @@ function calcDraw(){
   el("line", { x1: g.l, x2: g.l + g.pw, y1: g.t + g.ph, y2: g.t + g.ph, "class": "g-axis" }, svg);
   var yr, X, perYr = g.pw / ((x1 - x0) / 365.25), ystep = perYr >= 36 ? 1 : (perYr >= 22 ? 2 : 4);
   for (yr = 2023; yr <= +iso(x1).slice(0, 4); yr += ystep) { X = g.x(dayOf(yr + "-01-01")); el("line", { x1: X, x2: X, y1: g.t + g.ph, y2: g.t + g.ph + 4, "class": "g-axis" }, svg); el("text", { x: X, y: g.t + g.ph + 17, "text-anchor": X > g.l + g.pw - 14 ? "end" : "middle", "class": "t-tick" }, svg, String(yr)); }
-  // ±1σ band around the line
-  el("path", { d: "M" + pts(s.sigma, x0, x1).join("L") + "L" + pts(-s.sigma, x1, x0).join("L") + "Z", "class": "a-band" }, svg);
+  // after the data: the backtest error band around the scenario; inside the stage: the in-sample ±1σ residual band
+  el("path", { d: "M" + spts("hi", D1, x1).join("L") + "L" + spts("lo", x1, D1).join("L") + "Z", "class": "a-fan" }, svg);
+  el("path", { d: "M" + pts(s.sigma, x0, D1).join("L") + "L" + pts(-s.sigma, D1, x0).join("L") + "Z", "class": "a-band" }, svg);
   var xs = [], ys = [];
   for (j = 0; j < N; j++) if (days[j] >= x0) { xs.push(g.x(days[j])); ys.push(g.yl(lnc[j])); }
   el("path", { d: linePath(xs, ys), "class": "l-index" }, svg);
   el("path", { d: "M" + pts(0, x0, D1).join("L"), "class": "l-fit" }, svg);
   el("path", { d: "M" + pts(0, D1, x1).join("L"), "class": "l-fit-ext" }, svg);
+  el("path", { d: "M" + spts(null, D1, x1).join("L"), "class": "l-scen" }, svg);
   el("line", { x1: g.x(D1), x2: g.x(D1), y1: g.t, y2: g.t + g.ph, "class": "g-break" }, svg);
   el("text", { x: g.x(D1) + 6, y: g.t + g.ph - 8, "class": "t-now" }, svg, L("afterData"));
   g.sline = el("line", { y1: g.t, y2: g.t + g.ph, "class": "sel-line" }, svg);
-  g.adot = el("circle", { r: 4, "class": "dot", visibility: "hidden" }, svg);
-  g.sdot = el("circle", { r: 5.5, "class": "dot fit big" }, svg);
+  g.tdot = el("circle", { r: 4, "class": "dot fit" }, svg);
+  g.sdot = el("circle", { r: 5.5, "class": "dot big" }, svg);
   g.slab = el("text", { "class": "t-end" }, svg, "");
   g.hit = el("rect", { x: g.l, y: g.t, width: g.pw, height: g.ph, fill: "transparent" }, svg);
   // entry line: drawn above the click area so it can be dragged up and down
@@ -776,6 +859,7 @@ function calcDraw(){
 function setDay(d){ C.day = clampDay(d); calcReadout(); if (!C.g) calcDraw(); else calcSel(); }
 function calcText(){
   $("calc-date-label").textContent = L("dateLabel")(iso(CMIN));
+  $("calc-intro").textContent = L("calcIntro")(NUM[S.length - 1], fmtPct(LAST.cagr, 1));
   syncScale();
 }
 function syncScale(){
@@ -800,6 +884,22 @@ function calcInit(){
 }
 
 function td(tr, cls, text, sub){ var c = h("td", cls, tr, text); if (sub) h("span", "sub", c, sub); return c; }
+function drawOosTable(){
+  var t = $("oos-table"), tr, hr;
+  t.textContent = "";
+  hr = h("tr", null, h("thead", null, t));
+  L("oosHead").forEach(function(x, j){ h("th", j ? "num" : null, hr, x); });
+  var tb = h("tbody", null, t);
+  OOS.tab.forEach(function(r){
+    var pct = function(x){ return fmtPct(Math.exp(x) - 1, 0); };
+    tr = h("tr", r[0] === "close" && r[1] === "4y" ? "strong" : null, tb);
+    var lab = r[0] === "close" ? L("oosRow")[r[1]] : L("oosTrend");
+    td(tr, null, lab[0], lab[1]);
+    td(tr, "num", pct(r[2]) + " ~ " + pct(r[4]));
+    td(tr, "num", pct(r[3]));
+    td(tr, "num", Math.round(r[5] * 100) + "%");
+  });
+}
 function drawStageTable(){
   var t = $("stage-table"), tr;
   t.textContent = ""; tr = h("tr", "", h("thead", "", t));
@@ -847,7 +947,7 @@ function syncLang(){
   $("wrap").setAttribute("aria-label", L("ariaWrap"));
   $("meta-line").textContent = L("meta")(iso(D0), iso(D1), fmtInt(N), DATA.c[0], fmtInt(DATA.c[N - 1]));
 }
-function render(){ syncLang(); drawMain(); drawDev(); drawPE(); bindHover(); drawStageTable(); drawFallTable(); drawAnnual(); state.hover = -1; $("tip").style.visibility = "hidden"; }
+function render(){ syncLang(); drawMain(); drawDev(); drawPE(); bindHover(); drawOosTable(); drawStageTable(); drawFallTable(); drawAnnual(); state.hover = -1; $("tip").style.visibility = "hidden"; }
 function setLang(l, fromHash){
   if (l !== "en" && l !== "zh") return;
   LANG = l;
